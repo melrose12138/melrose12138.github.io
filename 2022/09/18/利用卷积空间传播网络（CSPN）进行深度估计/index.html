@@ -23,14 +23,14 @@
 <meta property="og:site_name" content="Melrose Wei&#39;s World">
 <meta property="og:description" content="基于 RGB 的 Lidar 数据增强Sparse-to-Dense: Depth Prediction from Sparse Depth Samples and a Single Image    从稀疏到密集：从稀疏深度样本和单一图像的深度预测motivation由于仅从单眼图像进行深度估计本质上是模糊和不可靠的，为了获得更高水平的鲁棒性和准确性，引入了额外的稀疏深度样本，使用单一的深度回归">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/images/CSPN.png">
-<meta property="og:image" content="http://example.com/images/network.png">
+<meta property="og:image" content="http://example.com/images/CSPN/CSPN.png">
+<meta property="og:image" content="http://example.com/images/CSPN/network.png">
 <meta property="article:published_time" content="2022-09-18T07:09:31.000Z">
-<meta property="article:modified_time" content="2022-09-18T07:13:23.934Z">
+<meta property="article:modified_time" content="2022-09-18T07:57:30.158Z">
 <meta property="article:author" content="Melrose Wei">
 <meta property="article:tag" content="生活，灵感，猫咪，C++开发">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/images/CSPN.png">
+<meta name="twitter:image" content="http://example.com/images/CSPN/CSPN.png">
   
   
   
@@ -299,7 +299,7 @@
 <p>输入：RGB图和稀疏深度  输出：稠密深度图</p>
 </blockquote>
 <blockquote>
-<p><img src="/./images/CSPN.png" srcset="/img/loading.gif" lazyload alt="avatar"></p>
+<p><img src="/images/CSPN/CSPN.png" srcset="/img/loading.gif" lazyload></p>
 </blockquote>
 <blockquote>
 <p>对给定网络的额外输出进行分支，它与深度网络共享相同的特征提取器。</p>
@@ -319,7 +319,7 @@
 <p>  首先，全局网络能够检测到（移动的）物体，并能够检测到一帧中可能具有相同深度的结构。我们期望计算得到一个更渐进的深度图，以防止激光雷达输入的突然变化和错误。这些信息可以通过检查RGB输入来确定，因为由于对象的颜色信息，可以更容易地提取对象的边界。因此，可以提取出语义上有意义的信息。</p>
 <p>  局部网络的输入为激光雷达帧，并执行局部上采样。为了修正有噪声的激光雷达数据，我们将激光雷达图与全局RGB图融合在一起。</p>
 <blockquote>
-<p> <img src="/./images/network.png" srcset="/img/loading.gif" lazyload alt="avatar"><br>网络结构</p>
+<p> <img src="/images/CSPN/network.png" srcset="/img/loading.gif" lazyload><br>网络结构</p>
 </blockquote>
 <p>  全局网络是一个基于ERFNet的编解码器网络，而局部网络是一个堆叠的沙漏网络。</p>
 <p>  局部网络由两个沙漏模块组成，以学习原始深度预测上的残差。</p>
