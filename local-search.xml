@@ -31,6 +31,12 @@
     
     
     
+    <tags>
+      
+      <tag>深度估计， 深度补全， RGB-D</tag>
+      
+    </tags>
+    
   </entry>
   
   
@@ -43,6 +49,14 @@
     <content type="html"><![CDATA[<p>第一次玩博客，就遇上了很多蠢问题，这里趁着还有些许回忆记录一下。</p><p>前期基本比较顺利，直到我想把Hexo博客部署到github上的时候。</p><ul><li><p>关于SSH密钥的配置问题<br>  出现问题</p>  <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">git<span class="hljs-meta">@github</span>.com: Permission <span class="hljs-title function_">denied</span> <span class="hljs-params">(publickey)</span>.<br></code></pre></td></tr></table></figure><p>  在使用</p>  <figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs nginx"><span class="hljs-attribute">ssh</span> -T git<span class="hljs-variable">@github</span>.com<br></code></pre></td></tr></table></figure><p>  验证ssh密钥是否配置成功的时候，</p><p>  出现了如下信息：</p>  <figure class="highlight ada"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ada">You<span class="hljs-symbol">&#x27;ve</span> successfully authenticated, but GitHub does <span class="hljs-keyword">not</span> provide shell <span class="hljs-keyword">access</span>.<br></code></pre></td></tr></table></figure><p>  其实这是正常的，别看有个but的转折就意味出现了什么问题了。</p><h2 id="SSH密钥原理"><a href="#SSH密钥原理" class="headerlink" title="SSH密钥原理"></a>SSH密钥原理</h2><p>  SSH登录安全性由非对称加密保证，产生密钥时，一次产生两个密钥，一个公钥，一个私钥，在git中一般命名为id_rsa.pub, id_rsa。</p><ol><li><p>本地生成一个<em>密钥对</em>，其中<em>公钥</em>放到远程主机，<em>私钥</em>保存在本地</p></li><li><p>当本地主机需要登录远程主机时，本地主机向远程主机发送一个登录请求，远程收到消息后，随机生成一个 字符串 并用 <em>公钥</em> <em><strong>加密</strong></em>，发回给本地。</p></li><li><p>本地拿到该 字符串，用存放在本地的 <em>私钥</em> 进行<em><strong>解密</strong></em>，再次发送到 远程主机，远程<strong>比对</strong>该 解密后的字符串 与 源字符串 是否等同，如果等同 则认证成功。</p></li></ol></li><li><p>关于fluid主题的配置问题</p><p>  原主题尚不符合我的审美，这款<code>fluid</code>的主题很好地契合了我的需求，于是就按照其文档进行一步步的配置。</p><p>  最傻但是也困了我最久的问题就是 _config.fluid.yml 文件配置过程。</p><p>  我使用 <code>hexo s</code> 命令启动观察服务器的时候，发现最显眼的博客标题和展示语都未按照我的配置来。</p><p>  原因有二：</p><ol><li><p>在为.yml 文件命名的过程中多敲了一个空格；</p></li><li><p>_config.fluid.yml 的文件内容应该是从 fluid 的 github 代码中的 _config.yml 复制过去， 而非原本的站点配置！！</p></li></ol></li></ul><p>博客可算是配置好了，以后一定要经常记录经常更新！！</p><p>在配置博客与博文写作的过程中，自己还有很多方面有待提升，比如 Markdown 的使用。 吼吼，完成今天的转码任务去咯！！</p>]]></content>
     
     
+    
+    <tags>
+      
+      <tag>SSH密钥， hexo</tag>
+      
+      <tag>fluid</tag>
+      
+    </tags>
     
   </entry>
   
