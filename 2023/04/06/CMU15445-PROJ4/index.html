@@ -1,0 +1,858 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/zju.png">
+  <link rel="icon" href="/img/zju.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Melrose Wei">
+  <meta name="keywords" content="生活，灵感，猫咪，C++开发">
+  
+    <meta name="description" content="Overview 这个项目是关于在BusTub中添加对事务（transaction）的支持。 分为三个部分：  Lock Manager：锁管理器，利用 2PL 实现并发控制。支持 REPEATABLE_READ、READ_COMMITTED 和 READ_UNCOMMITTED 三种隔离级别，支持 SHARED、EXCLUSIVE、INTENTION_SHARED、INTENTION_EXCLU">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMU15-445 PROJECT4 Concurrency Control 项目记录">
+<meta property="og:url" content="http://example.com/2023/04/06/CMU15445-PROJ4/index.html">
+<meta property="og:site_name" content="卓先生的小站">
+<meta property="og:description" content="Overview 这个项目是关于在BusTub中添加对事务（transaction）的支持。 分为三个部分：  Lock Manager：锁管理器，利用 2PL 实现并发控制。支持 REPEATABLE_READ、READ_COMMITTED 和 READ_UNCOMMITTED 三种隔离级别，支持 SHARED、EXCLUSIVE、INTENTION_SHARED、INTENTION_EXCLU">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/CMU15445-PROJ4/p4paased.png">
+<meta property="og:image" content="http://example.com/images/CMU15445-PROJ4/p4leaderboard.png">
+<meta property="article:published_time" content="2023-04-06T13:05:36.000Z">
+<meta property="article:modified_time" content="2023-04-06T13:12:32.716Z">
+<meta property="article:author" content="Melrose Wei">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CMU15-445">
+<meta property="article:tag" content="数据库">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/images/CMU15445-PROJ4/p4paased.png">
+  
+  
+  
+  <title>CMU15-445 PROJECT4 Concurrency Control 项目记录 - 卓先生的小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="卓先生的小站" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 80vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>卓先生的小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/lanny.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CMU15-445 PROJECT4 Concurrency Control 项目记录"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-04-06 21:05" pubdate>
+          2023年4月6日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          9.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          82 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+        <div class="scroll-down-bar">
+          <i class="iconfont icon-arrowdown"></i>
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">CMU15-445 PROJECT4 Concurrency Control 项目记录</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="overview">Overview</h1>
+<p>这个项目是关于在BusTub中添加对事务（transaction）的支持。</p>
+<p>分为三个部分：</p>
+<ul>
+<li><strong>Lock Manager</strong>：锁管理器，利用 2PL 实现并发控制。支持
+REPEATABLE_READ、READ_COMMITTED 和 READ_UNCOMMITTED 三种隔离级别，支持
+SHARED、EXCLUSIVE、INTENTION_SHARED、INTENTION_EXCLUSIVE 和
+SHARED_INTENTION_EXCLUSIVE 五种锁，支持 table 和 row
+两种锁粒度，支持锁升级。Project 4 重点部分。</li>
+<li><strong>Deadlock Detection</strong>：死锁检测，运行在一个 background
+线程，每间隔一定时间检测当前是否出现死锁，并挑选合适的事务将其 abort
+以解开死锁。</li>
+<li><strong>Concurrent Query Execution</strong>：修改之前实现的
+SeqScan、Insert 和 Delete 算子，加上适当的锁以实现并发的查询。</li>
+</ul>
+<h1 id="task-1---lock-manager">Task #1 - Lock Manager</h1>
+<p>为了确保transaction操作的正确顺序，DBMS将使用一个锁管理器（LM）来控制事务何时被允许访问数据项。LM的基本概念是，它维护一个关于当前由活动事务持有的锁的内部数据结构。事务在被允许访问一个数据项之前，会向LM发出锁请求。LM会将锁授予调用的事务，阻止该事务，或中止该事务。</p>
+<p>首先看一下lock manager的结构： <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">/** Structure that holds lock requests for a given table oid */</span><br>std::unordered_map&lt;<span class="hljs-type">table_oid_t</span>, std::shared_ptr&lt;LockRequestQueue&gt;&gt; table_lock_map_;<br><span class="hljs-comment">/** Coordination */</span><br>std::mutex table_lock_map_latch_;<br><br><span class="hljs-comment">/** Structure that holds lock requests for a given RID */</span><br>std::unordered_map&lt;RID, std::shared_ptr&lt;LockRequestQueue&gt;&gt; row_lock_map_;<br><span class="hljs-comment">/** Coordination */</span><br>std::mutex row_lock_map_latch_;<br><br>std::atomic&lt;<span class="hljs-type">bool</span>&gt; enable_cycle_detection_;<br>std::thread *cycle_detection_thread_;<br><span class="hljs-comment">/** Waits-for graph representation. */</span><br>std::unordered_map&lt;<span class="hljs-type">txn_id_t</span>, std::vector&lt;<span class="hljs-type">txn_id_t</span>&gt;&gt; waits_for_;<br>std::mutex waits_for_latch_;<br></code></pre></td></tr></table></figure>
+我们需要一些方法来跟踪哪些事务正在等待一个锁。可以使用提供的<code>LockRequestQueue</code>类：
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">class</span> <span class="hljs-title class_">LockRequestQueue</span> &#123;<br> <span class="hljs-keyword">public</span>:<br>  <span class="hljs-comment">/** List of lock requests for the same resource (table or row) */</span><br>  std::list&lt;LockRequest *&gt; request_queue_;<br>  <span class="hljs-comment">/** For notifying blocked transactions on this rid */</span><br>  std::condition_variable cv_;<br>  <span class="hljs-comment">/** txn_id of an upgrading transaction (if any) */</span><br>  <span class="hljs-type">txn_id_t</span> upgrading_ = INVALID_TXN_ID;<br>  <span class="hljs-comment">/** coordination */</span><br>  std::mutex latch_;<br>&#125;;<br></code></pre></td></tr></table></figure></p>
+<p>这里修改实际存放锁请求的队列为<code>std::list&lt;std::shared_ptr&lt;LockRequest&gt;&gt; request_queue_;</code></p>
+<p>Lock Manager 的作用是处理事务发送的锁请求，Lock Manager
+对收到的请求进行处理。如果发现此时没有其他的锁与这个请求冲突，则授予锁并返回；如果存在冲突，例如其他事务持有这张表的
+X 锁，则 Lock Manager
+会阻塞此请求（即阻塞此事务），直到能够授予锁，再授予并返回。</p>
+<h2 id="lock">Lock</h2>
+<h3 id="一检查-txn-的状态">一：检查 txn 的状态。</h3>
+<p>若 txn 处于 Abort/Commit 状态，抛逻辑异常； 若 txn 处于 Shrinking
+状态，则需要检查 txn 的隔离级别和当前锁请求类型。三种隔离级别分别是： *
+REPEATABLE _ READ: 事务需要获取所有锁。所有锁都允许处于 GROWING
+状态。在Shrinking状态下不允许使用锁。此时造成事务终止，并抛出
+<code>LOCK_ON_SHRINKING</code> 异常。 * READ _ COMMITTED:
+事务需要获取所有锁。所有锁都允许处于 GROWING 状态，只有 IS，S 锁允许处于
+SHRINKING 状态。此时若为 IS，S 锁，则正常通过，否则抛
+<code>LOCK_ON_SHRINKING</code>。 * READ_UNCOMMITTED: 事务只需要使用 IX、
+X 锁。 X，IX 锁允许处于 GROWING 状态。 不允许使用S, IS, SIX锁。此时若为
+IX，X 锁，抛 <code>LOCK_ON_SHRINKING</code>，否则抛
+<code>LOCK_SHARED_ON_READ_UNCOMMITTED</code>。</p>
+<p>若 txn 处于 Growing 状态，若隔离级别为 <code>READ_UNCOMMITTED</code>
+且锁类型为 S/IS/SIX，抛
+<code>LOCK_SHARED_ON_READ_UNCOMMITTED</code>。其余状态正常通过。</p>
+<p>以<code>LockTable()</code>的<code>READ_UNCOMMITTED</code>隔离级别为例：
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">if</span> (txn-&gt;<span class="hljs-built_in">GetIsolationLevel</span>() == IsolationLevel::READ_UNCOMMITTED) &#123;<br>  <span class="hljs-keyword">if</span> (lock_mode == LockMode::SHARED || lock_mode == LockMode::INTENTION_SHARED ||<br>      lock_mode == LockMode::SHARED_INTENTION_EXCLUSIVE) &#123;<br>    txn-&gt;<span class="hljs-built_in">SetState</span>(TransactionState::ABORTED);<br>    <span class="hljs-keyword">throw</span> <span class="hljs-built_in">TransactionAbortException</span>(txn-&gt;<span class="hljs-built_in">GetTransactionId</span>(), AbortReason::LOCK_SHARED_ON_READ_UNCOMMITTED);<br>  &#125;<br>  <span class="hljs-keyword">if</span> (txn-&gt;<span class="hljs-built_in">GetState</span>() == TransactionState::SHRINKING &amp;&amp;<br>      (lock_mode == LockMode::EXCLUSIVE || lock_mode == LockMode::INTENTION_EXCLUSIVE)) &#123;<br>    txn-&gt;<span class="hljs-built_in">SetState</span>(TransactionState::ABORTED);<br>    <span class="hljs-keyword">throw</span> <span class="hljs-built_in">TransactionAbortException</span>(txn-&gt;<span class="hljs-built_in">GetTransactionId</span>(), AbortReason::LOCK_ON_SHRINKING);<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure></p>
+<h3 id="二获取-table-对应的-lock-request-queue">二：获取 table 对应的
+lock request queue。</h3>
+<p>从 table_lock_map_ 中获取 table 对应的 lock request queue。注意需要对
+map 加锁，并且为了提高并发性，在获取到 queue 之后立即释放 map 的锁。若
+queue 不存在则创建。 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp">table_lock_map_latch_.<span class="hljs-built_in">lock</span>();<br><span class="hljs-keyword">if</span> (table_lock_map_.<span class="hljs-built_in">find</span>(oid) == table_lock_map_.<span class="hljs-built_in">end</span>()) &#123;<br>  table_lock_map_.<span class="hljs-built_in">emplace</span>(oid, std::<span class="hljs-built_in">make_shared</span>&lt;LockRequestQueue&gt;());<br>&#125;<br><span class="hljs-keyword">auto</span> lock_request_queue = table_lock_map_.<span class="hljs-built_in">find</span>(oid)-&gt;second;<br>lock_request_queue-&gt;latch_.<span class="hljs-built_in">lock</span>();<br>table_lock_map_latch_.<span class="hljs-built_in">unlock</span>();<br></code></pre></td></tr></table></figure></p>
+<h3
+id="三检查此锁请求是否为一次锁升级">三：检查此锁请求是否为一次锁升级。</h3>
+<p>granted 和 waiting
+的锁请求均放在同一个队列里，我们需要遍历队列查看有没有与当前事务 id
+相同的请求。</p>
+<p>首先，判断此前授予锁类型是否与当前请求锁类型相同。若相同，则代表是一次重复的请求，直接返回。否则进行下一步检查。
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">if</span> (request-&gt;lock_mode_ == lock_mode) &#123;<br>        lock_request_queue-&gt;latch_.<span class="hljs-built_in">unlock</span>();<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>      &#125;<br></code></pre></td></tr></table></figure></p>
+<p>接下来，判断当前资源上是否有另一个事务正在尝试升级。若有，则终止当前事务，抛出
+<code>UPGRADE_CONFLICT</code>
+异常。因为<strong>不允许多个事务在同一资源上同时尝试锁升级</strong>(简化实现，否则需要增加一条升级队列)。
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">if</span> (lock_request_queue-&gt;upgrading_ != INVALID_TXN_ID) &#123;<br>    lock_request_queue-&gt;latch_.<span class="hljs-built_in">unlock</span>();<br>    txn-&gt;<span class="hljs-built_in">SetState</span>(TransactionState::ABORTED);<br>    <span class="hljs-keyword">throw</span> <span class="hljs-built_in">TransactionAbortException</span>(txn-&gt;<span class="hljs-built_in">GetTransactionId</span>(), AbortReason::UPGRADE_CONFLICT);<br>&#125;<br></code></pre></td></tr></table></figure>
+然后，判断升级锁的类型和之前锁是否兼容，不能反向升级。若不兼容，抛
+<code>INCOMPATIBLE_UPGRADE</code> 异常。 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">if</span> (!(request-&gt;lock_mode_ == LockMode::INTENTION_SHARED &amp;&amp;<br>      (lock_mode == LockMode::SHARED || lock_mode == LockMode::EXCLUSIVE ||<br>       lock_mode == LockMode::INTENTION_EXCLUSIVE || lock_mode == LockMode::SHARED_INTENTION_EXCLUSIVE)) &amp;&amp;<br>    !(request-&gt;lock_mode_ == LockMode::SHARED &amp;&amp;<br>      (lock_mode == LockMode::EXCLUSIVE || lock_mode == LockMode::SHARED_INTENTION_EXCLUSIVE)) &amp;&amp;<br>    !(request-&gt;lock_mode_ == LockMode::INTENTION_EXCLUSIVE &amp;&amp;<br>      (lock_mode == LockMode::EXCLUSIVE || lock_mode == LockMode::SHARED_INTENTION_EXCLUSIVE)) &amp;&amp;<br>    !(request-&gt;lock_mode_ == LockMode::SHARED_INTENTION_EXCLUSIVE &amp;&amp; (lock_mode == LockMode::EXCLUSIVE))) &#123;<br>  lock_request_queue-&gt;latch_.<span class="hljs-built_in">unlock</span>();<br>  txn-&gt;<span class="hljs-built_in">SetState</span>(TransactionState::ABORTED);<br>  <span class="hljs-keyword">throw</span> <span class="hljs-built_in">TransactionAbortException</span>(txn-&gt;<span class="hljs-built_in">GetTransactionId</span>(), AbortReason::INCOMPATIBLE_UPGRADE);<br>&#125;<br></code></pre></td></tr></table></figure></p>
+<p>锁升级大致步骤如下： 1. 判断是否能够升级； 2.
+释放当前已经持有的锁，并在 queue 中标记正在尝试升级。 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp">lock_request_queue-&gt;request_queue_.<span class="hljs-built_in">insert</span>(lr_iter, upgrade_lock_request);<br>lock_request_queue-&gt;upgrading_ = txn-&gt;<span class="hljs-built_in">GetTransactionId</span>();<br></code></pre></td></tr></table></figure> 3.
+等待直到新锁被授予。 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">std::unique_lock&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(lock_request_queue-&gt;latch_, std::adopt_lock)</span></span>;<br><span class="hljs-keyword">while</span> (!<span class="hljs-built_in">GrantLock</span>(upgrade_lock_request, lock_request_queue)) &#123;<br>  lock_request_queue-&gt;cv_.<span class="hljs-built_in">wait</span>(lock);<br>  <span class="hljs-keyword">if</span> (txn-&gt;<span class="hljs-built_in">GetState</span>() == TransactionState::ABORTED) &#123;<br>    lock_request_queue-&gt;upgrading_ = INVALID_TXN_ID;<br>    lock_request_queue-&gt;request_queue_.<span class="hljs-built_in">remove</span>(upgrade_lock_request);<br>    lock_request_queue-&gt;cv_.<span class="hljs-built_in">notify_all</span>();<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure></p>
+<h3 id="四将锁请求加入请求队列">四：将锁请求加入请求队列。</h3>
+<p>使用智能指针创建一个<code>lock_request</code>，并加入队列尾部。
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">auto</span> lock_request = std::<span class="hljs-built_in">make_shared</span>&lt;LockRequest&gt;(txn-&gt;<span class="hljs-built_in">GetTransactionId</span>(), lock_mode, oid);<br>lock_request_queue-&gt;request_queue_.<span class="hljs-built_in">push_back</span>(lock_request);<br></code></pre></td></tr></table></figure></p>
+<h3 id="五尝试获取锁">五：尝试获取锁。</h3>
+<p>和互斥锁、信号量类似，条件变量本质也是一个全局变量，它的功能是阻塞线程，直至接收到“条件成立”的信号后，被阻塞的线程才能继续执行。</p>
+<p>条件变量与互斥锁配合使用。首先需要持有锁，并查看是否能够获取资源。这个锁与资源绑定，是用来保护资源的锁。若暂时无法获取资源，则调用条件变量的
+wait 函数。调用 wait 函数后，latch
+将自动释放，并且当前线程被挂起，以节省资源。这就是阻塞的过程。此外，允许有多个线程在
+wait 同一个 latch。</p>
+<p>当其他线程的活动使得资源状态发生改变时，需要调用条件遍历的
+<code>notify_all()</code> 函数。<code>notify_all()</code>
+会唤醒所有正在此条件变量上阻塞的线程。在线程被唤醒后，其仍处于 wait
+函数中。在 wait 函数中尝试获取 latch。在成功获取 latch 后，退出 wait
+函数，进入循环的判断条件，检查是否能获取资源。若仍不能获取资源，就继续进入
+wait 阻塞，释放锁，挂起线程。若能获取资源，则退出循环。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">std::unique_lock&lt;std::mutex&gt; <span class="hljs-title">lock</span><span class="hljs-params">(lock_request_queue-&gt;latch_, std::adopt_lock)</span></span>;<br><span class="hljs-keyword">while</span> (!<span class="hljs-built_in">GrantLock</span>(lock_request, lock_request_queue)) &#123;<br>  lock_request_queue-&gt;cv_.<span class="hljs-built_in">wait</span>(lock);<br>  <span class="hljs-keyword">if</span> (txn-&gt;<span class="hljs-built_in">GetState</span>() == TransactionState::ABORTED) &#123;<br>    lock_request_queue-&gt;request_queue_.<span class="hljs-built_in">remove</span>(lock_request);<br>    lock_request_queue-&gt;cv_.<span class="hljs-built_in">notify_all</span>();<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p><code>GrantLock()</code> 中，Lock Manager
+会判断是否可以满足当前锁请求。若可以满足，则返回
+true，事务成功获取锁，并退出循环。若不能满足，则返回
+false，事务暂时无法获取锁，在 wait
+处阻塞，等待资源状态变化（即其他事务释放了锁）时被唤醒并再次判断是否能够获取锁。</p>
+<p>row lock 与 table lock 几乎相同，仅多了一个检查步骤。在接收到 row
+lock 请求后，需要检查是否持有 row 对应的 table lock。必须先持有 table
+lock 再持有 row lock。</p>
+<h2 id="unlock">UnLock</h2>
+<h3 id="一获取对应的-lock-request-queue">一：获取对应的 lock request
+queue。</h3>
+<h3
+id="二遍历请求队列找到-unlock-对应的-granted-请求">二：遍历请求队列，找到
+unlock 对应的 granted 请求。</h3>
+<p>找到对应的请求后，根据事务的隔离级别和锁类型修改其状态。</p>
+<h3
+id="三在锁成功释放后检查能够获取锁">三：在锁成功释放后，检查能够获取锁。</h3>
+<p>调用 cv_.notify_all() 唤醒所有阻塞在此 table 上的事务。</p>
+<p>最后，Task1的核心是
+<strong>条件变量阻塞模型</strong>。一个条件变量可以阻塞多个线程，这些线程会组成一个等待队列。当条件成立时，条件变量可以解除线程的“被阻塞状态”。也就是说，条件变量可以完成以下两项操作：
+* 阻塞线程，直至接收到“条件成立”的信号； *
+向等待队列中的一个或所有线程发送“条件成立”的信号，解除它们的“被阻塞”状态。</p>
+<p>为了避免多线程之间发生“抢夺资源”的问题，条件变量在使用过程中必须和一个互斥锁搭配使用。</p>
+<h1 id="task-2---deadlock-detection">Task #2 - Deadlock Detection</h1>
+<p>在阻塞过程中有可能会出现多个事务的循环等待，而循环等待会造成死锁。</p>
+<p>首先构造<code>waits_for_</code>图。构建<code>waits_for_</code>图的过程是，遍历
+<code>table_lock_map_</code> 和 <code>row_lock_map_</code>
+中所有的请求队列，对于每一个请求队列，用一个二重循环使用<code>AddEdge()</code>函数将所有满足等待关系的一对
+tid 加入<code>waits_for_</code>图的边集。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span> <span class="hljs-type">const</span> &amp;lock_request : pair.second-&gt;request_queue_) &#123;<br>  <span class="hljs-keyword">if</span> (lock_request-&gt;granted_) &#123;<br>    granted_set.<span class="hljs-built_in">emplace</span>(lock_request-&gt;txn_id_);<br>  &#125; <span class="hljs-keyword">else</span> &#123;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span> txn_id : granted_set) &#123;<br>      map_txn_oid_.<span class="hljs-built_in">emplace</span>(lock_request-&gt;txn_id_, lock_request-&gt;oid_);<br>      <span class="hljs-built_in">AddEdge</span>(lock_request-&gt;txn_id_, txn_id);<br>    &#125;<br>  &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>
+<p>在成功构建 wait for
+图后，对<code>waits_for_</code>图实施环检测算法。这里用dfs来实现环检测算法。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-keyword">auto</span> <span class="hljs-title">Dfs</span><span class="hljs-params">(<span class="hljs-type">txn_id_t</span> txn_id)</span> -&gt; <span class="hljs-type">bool</span> </span>&#123;<br>  <span class="hljs-keyword">if</span> (safe_set_.<span class="hljs-built_in">find</span>(txn_id) != safe_set_.<span class="hljs-built_in">end</span>()) &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>  &#125;<br>  active_set_.<span class="hljs-built_in">insert</span>(txn_id);<br><br>  std::vector&lt;<span class="hljs-type">txn_id_t</span>&gt; &amp;next_node_vector = waits_for_[txn_id];<br>  std::<span class="hljs-built_in">sort</span>(next_node_vector.<span class="hljs-built_in">begin</span>(), next_node_vector.<span class="hljs-built_in">end</span>());<br>  <span class="hljs-keyword">for</span> (<span class="hljs-type">txn_id_t</span> <span class="hljs-type">const</span> next_node : next_node_vector) &#123;<br>    <span class="hljs-keyword">if</span> (active_set_.<span class="hljs-built_in">find</span>(next_node) != active_set_.<span class="hljs-built_in">end</span>()) &#123;<br>      <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>    &#125;<br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Dfs</span>(next_node)) &#123;<br>      <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>    &#125;<br>  &#125;<br><br>  active_set_.<span class="hljs-built_in">erase</span>(txn_id);<br>  safe_set_.<span class="hljs-built_in">insert</span>(txn_id);<br>  <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>本项目中<code>HasCycle()</code>需要在成环的节点中找到合适的事务终止之。挑选txn_id最大的事务终止即可。将此事务的状态设为
+Aborted。并且在请求队列中移除此事务，释放其持有的锁，终止其正在阻塞的请求，并调用
+<code>cv_.notify_all()</code>
+通知正在阻塞的相关事务。此外，还需移除<code>waits_for_</code>图中与此事务有关的边。</p>
+<p>最后，Task2的核心是
+<strong>环检测算法</strong>。使用<code>active_set_</code>和<code>safe_set_</code>来记录已经过的节点和安全的节点。如果该节点通过邻接表经过所有路径都不会成环，则这个节点就是安全的，下次经过这个节点可以直接返回<code>true</code>；当深度遍历某节点时，先将其放入<code>activate_set_</code>中，如果在其邻接表中有<code>active_set_</code>中的tid，则表示有环，接着递归搜索。</p>
+<h1 id="task-3---concurrent-query-execution">Task #3 - Concurrent Query
+Execution</h1>
+<p>在并发查询执行期间，executor需要适当地锁定/解锁tuple，以实现相应事务中指定的隔离级别。
+在这里我们需要更新 PROJECT3 中实现的一些
+executor（<code>SeqScan</code>、<code>Insert</code>和<code>Delete</code>）的<code>Next()</code>方法。注意，当锁定/解锁失败时，事务应该中止。当执行器无法获得锁时，你应该抛出一个<code>ExecutionException</code>，这样执行引擎就会告诉用户，查询失败了，应该被中止。</p>
+<h2 id="seqscan">SeqScan</h2>
+<p>如果隔离级别是<code>READ_UNCOMMITTED</code>
+则无需加锁。加锁失败则抛出 <code>ExecutionException</code> 异常。这里
+需要给表加 IS 锁，再给行加 S
+锁。不能够直接给表加S/X锁，而是应该给表加意向锁，再给行加锁。</p>
+<p>如果给表加 S锁的话，执行
+<code>DELETE... WHERE...</code>的SQL语句，同一个 query
+里先在下层<code>SeqScan</code>加了S锁，又尝试在<code>Delete</code>里加IX锁，但是S不能升级为IX，而导致query执行不了。</p>
+<h2 id="insert-delete">Insert &amp; Delete</h2>
+<p>给表加IX锁，再给行加X锁即可。获取失败则抛
+<code>ExecutionException</code> 异常。另外，这里的获取失败不仅是结果返回
+false，还有可能是抛出了 <code>TransactionAbort()</code> 异常，例如
+<code>UPGRADE_CONFLICT</code>，需要用 try catch 捕获。</p>
+<h1 id="leaderboard-task-optional">Leaderboard Task (Optional)</h1>
+<h2 id="predicate-pushdown-to-seqscan.">Predicate pushdown to
+SeqScan.</h2>
+<p>可以在SeqScanExecutor中实现谓词过滤。将 SeqScan 算子上层的 Filter
+算子结合进 SeqScan 里，这样仅需锁住符合 Predicate 的行。</p>
+<h2 id="implement-updateexecutor">Implement UpdateExecutor</h2>
+<p>实现 Update 算子，这样可以在原地直接修改 tuple，不需要先 Delete 再
+Insert。表加 IX 锁，行加 X 锁。返回更新的行的数量。</p>
+<h2 id="use-index">Use Index</h2>
+<p>可以在表上创建一个索引，然后将谓词下推到<code>IndexScanExecutor</code>来做索引查询。例如，如果我们在id列上有一个索引，<code>SELECT * WHERE id = 1</code>可以（1）提取<code>id = 1</code>谓词
+（2）在索引上直接调用<code>GetValue(1)</code>，而不是做一个完整的索引扫描或表扫描。</p>
+<p>具体做法是修改 IndexScan
+算子，添加一种单点查询的情况。单点查询时IndexScan 算子中要注意加锁，表
+IS 行 S。</p>
+<figure>
+<img src="/images/CMU15445-PROJ4/p4paased.png" srcset="/img/loading.gif" lazyload alt="p4通关" />
+<figcaption aria-hidden="true">p4通关</figcaption>
+</figure>
+<p>这次的成绩稍微差一点，但也不想花时间思考优化了。</p>
+<figure>
+<img src="/images/CMU15445-PROJ4/p4leaderboard.png" srcset="/img/loading.gif" lazyload
+alt="p4Leaderboard" />
+<figcaption aria-hidden="true">p4Leaderboard</figcaption>
+</figure>
+<h1 id="写在最后">写在最后</h1>
+<p>经过将近一个月断断续续的摸爬滚打，可算把CMU15-445这项课程项目完成了。前两个项目更侧重于算法实现，后两个项目更多是对数据库相关概念知识的理解，虽然全部通过了，但是很容易遗忘，并且只追求速度做项目而没有仔细地过一遍课程加深理解。虽然完全pass了，但是还有些收尾工作应该完成，比如补完课程，有新的理解体会也会更新在博客上。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%BC%80%E5%8F%91/" class="category-chain-item">开发</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/C/">#C++</a>
+      
+        <a href="/tags/CMU15-445/">#CMU15-445</a>
+      
+        <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">#数据库</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CMU15-445 PROJECT4 Concurrency Control 项目记录</div>
+      <div>http://example.com/2023/04/06/CMU15445-PROJ4/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Melrose Wei</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年4月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/10/01/6.824-lab1-mapreduce/" title="MIT6.824 lab1 mapreduce 项目记录">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">MIT6.824 lab1 mapreduce 项目记录</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/04/04/CMU15445-PROJ3/" title="CMU15-445 PROJECT3 Query Executor 项目记录">
+                        <span class="hidden-mobile">CMU15-445 PROJECT3 Query Executor 项目记录</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'melrose12138/commit-utterances');
+      s.setAttribute('issue-term', 'title');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

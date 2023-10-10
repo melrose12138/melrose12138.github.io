@@ -1,0 +1,842 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/zju.png">
+  <link rel="icon" href="/img/zju.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Melrose Wei">
+  <meta name="keywords" content="生活，灵感，猫咪，C++开发">
+  
+    <meta name="description" content="任务1：可扩展哈希表TASK#1: EXTENDIBLE HASH TABLE 个人认为通过网上的资料比听网课效率更高，所以本人通过参考各种网站以及博客来学习可扩展哈希表算法。 再加之项目注释写得也比较清楚了，按照注释以及项目主页的提示按部就班地进行编码，还是比较容易完成的。 可扩展哈希 是一种动态散列方法，其中目录（directory）和桶（bucket）用于散列数据。 主要特点及相关术语 目录">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMU15-445 PROJECT1 BUFFER POOL MANAGER 项目记录">
+<meta property="og:url" content="http://example.com/2023/03/06/CMU15445-PROJ1/index.html">
+<meta property="og:site_name" content="卓先生的小站">
+<meta property="og:description" content="任务1：可扩展哈希表TASK#1: EXTENDIBLE HASH TABLE 个人认为通过网上的资料比听网课效率更高，所以本人通过参考各种网站以及博客来学习可扩展哈希表算法。 再加之项目注释写得也比较清楚了，按照注释以及项目主页的提示按部就班地进行编码，还是比较容易完成的。 可扩展哈希 是一种动态散列方法，其中目录（directory）和桶（bucket）用于散列数据。 主要特点及相关术语 目录">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/CMU15445-PROJ1/proj1_100.png">
+<meta property="og:image" content="http://example.com/images/CMU15445-PROJ1/leaderboard.png">
+<meta property="article:published_time" content="2023-03-06T05:52:49.000Z">
+<meta property="article:modified_time" content="2023-04-06T13:09:32.741Z">
+<meta property="article:author" content="Melrose Wei">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CMU15-445">
+<meta property="article:tag" content="数据库">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/images/CMU15445-PROJ1/proj1_100.png">
+  
+  
+  
+  <title>CMU15-445 PROJECT1 BUFFER POOL MANAGER 项目记录 - 卓先生的小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="卓先生的小站" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 80vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>卓先生的小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/lanny.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CMU15-445 PROJECT1 BUFFER POOL MANAGER 项目记录"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-06 13:52" pubdate>
+          2023年3月6日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          42 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+        <div class="scroll-down-bar">
+          <i class="iconfont icon-arrowdown"></i>
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">CMU15-445 PROJECT1 BUFFER POOL MANAGER 项目记录</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1
+id="任务1可扩展哈希表-task1-extendible-hash-table">任务1：可扩展哈希表<br>TASK#1:
+EXTENDIBLE HASH TABLE</h1>
+<p>个人认为通过网上的资料比听网课效率更高，所以本人通过参考各种网站以及博客来学习可扩展哈希表算法。
+再加之项目注释写得也比较清楚了，按照注释以及项目主页的提示按部就班地进行编码，还是比较容易完成的。</p>
+<p><strong>可扩展哈希</strong>
+是一种动态散列方法，其中目录（directory）和桶（bucket）用于散列数据。</p>
+<h2 id="主要特点及相关术语">主要特点及相关术语</h2>
+<p><strong>目录</strong>：目录存储指向桶地址的指针。每个目录都有一个唯一的
+id，每次扩展时该 id 可能会发生变化。哈希函数返回此目录
+id，用于导航到适当的存储桶。</p>
+<p><span class="math inline">\(目录数 = 2^{Global Depth}\)</span>。</p>
+<p><strong>桶</strong>：桶用于散列实际数据。如果桶的局部深度小于全局深度，则桶可能包含多个指向它的指针。</p>
+<p><strong>全局深度</strong>：与目录相关，表示哈希函数用于对密钥进行分类的位数。全局深度
+= 目录 id 中的位数。</p>
+<p><strong>局部深度</strong>：与 全局深度 类似，只是 局部深度
+关联的是桶而不是目录。根据全局深度的局部深度用于决定在发生溢出时要执行的操作。局部深度≤全局深度。</p>
+<p><strong>桶分裂</strong>（split）：当桶中的元素数量超过特定大小时，桶被分成两部分。</p>
+<p><strong>目录扩展</strong>（expand）：目录扩展发生在桶溢出时。当
+溢出桶的 局部深度 等于 全局深度 时，执行目录扩展。</p>
+<h2 id="实现过程">实现过程</h2>
+<h3 id="bucket类的实现">Bucket类的实现</h3>
+<p>课程主页建议我们先完成 <code>Bucket</code> 类的编写，其中包括
+<code>Find(), Remove(), Insert()</code>三个方法的实现。
+Bucket类内置<code>list</code>结构，存储键值对。三个函数的实现方式都是遍历该<code>list</code>。</p>
+<p><code>Find()</code> 在找到对应元素时返回 true，否则返回
+false；<code>Remove()</code>在找到对应元素时使用<code>list.erase()</code>
+删除该元素并返回 true，若没有找到对应元素返回 false；
+<code>Insert()</code>在遍历过程中如果发现同样的键值则返回
+false，否则使用 <code>list.emplace_back()</code> 插入键值对。</p>
+<h3 id="insert方法实现">Insert()方法实现</h3>
+<p>首先理解一下项目给出的 <code>IndexOf()</code> 方法，因为
+<code>Insert()</code> 方法的实现需要借鉴类似的思想。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs Cpp"><span class="hljs-keyword">template</span> &lt;<span class="hljs-keyword">typename</span> K, <span class="hljs-keyword">typename</span> V&gt;<br><span class="hljs-keyword">auto</span> ExtendibleHashTable&lt;K, V&gt;::<span class="hljs-built_in">IndexOf</span>(<span class="hljs-type">const</span> K &amp;key) -&gt; <span class="hljs-type">size_t</span> &#123;<br>  <span class="hljs-type">int</span> mask = (<span class="hljs-number">1</span> &lt;&lt; global_depth_) - <span class="hljs-number">1</span>;<br>  <span class="hljs-keyword">return</span> std::<span class="hljs-built_in">hash</span>&lt;K&gt;()(key) &amp; mask;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>对于给定的键值，首先根据全局深度计算mask，比如如果全局深度是5，则<code>(1 &lt;&lt; global_depth_)</code>为100000，mask则为11111，与mask按位与即保留原key哈希值的后5位，即得到对应目录的位置。</p>
+<p>理解这个原理后先放一边，先讨论以下最简单的情况，也就是
+<strong>桶无须分裂</strong> 的时候：</p>
+<p>此时调用<code>IndexOf()</code>找到的index对应的就是需要进行插入操作的桶。此时有两种情况：
+* 如果键值已经存在，则修改key对应的value为新的值，并直接return即可； *
+否则 直接调用 <code>Bucket-&gt; Insert()</code>
+在这个桶中插入键值对即可。</p>
+<p>接着就是最复杂的部分，就是 <strong>需要目录扩展和桶分裂</strong>
+的情况：</p>
+<p>首先要知道，桶在一次插入的过程中可能需要进行多次分裂，所以我们需要进入<code>while (dir_[IndexOf(key)]-&gt;IsFull())</code>循环。</p>
+<p><strong>多次分裂是什么情况呢？</strong></p>
+<p>一个桶装满的时候，桶中的key对应的hash后若干位（取决于局部深度）一定是一样的，但我们无法保证前面的几位是否就不一样，如果运气不好，在局部深度前的几位都是相同的话，则可能需要分裂出更多的桶来装，否则根本就装不进去。</p>
+<p>如果全局深度等于局部深度，则目录需要扩展。</p>
+<p><strong>如何进行目录扩展？</strong>LRU-K中的k，其实是指最近访问页面的次数，所以我们不难理解，上文所介绍的LRU算法其实就是LRU-1，但是因为仅访问1次就能替代别人，可能会造成“缓存污染”的问题，因此提出了LRU-K的概念。</p>
+<p>其核心思想就是将访问一次就能替代的“1”提升为"K"。</p>
+<p>将目录的size扩展为原来的两倍，上面的一半最高位是0，下面的一半最高位是1.</p>
+<p>下面的一半直接拷贝上面的一半，因为
+要指向除最高位以外所有低位相同对应的桶。 杨是要进行分裂的。</p>
+<p><strong>如何将桶进行分裂？</strong></p>
+<p>首先弄出两个桶，再将原桶中的元素一个个装进去。这里分桶装也是根据key的hash和mask的按位与，只不过这里
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-type">int</span> mask = <span class="hljs-number">1</span> &lt;&lt; target_bucket-&gt;<span class="hljs-built_in">GetDepth</span>();<br></code></pre></td></tr></table></figure> 这是因为我们需要看他的高位而不是低几位。</p>
+<p>分完桶中的键值对之后，再将dir中的原先指向target_bucket的指针重新分配一遍。</p>
+<p>注意这里我们的bucket都用shared_ptr，所以不用担心原来的bucket会怎么样。</p>
+<h2 id="遇到问题及解决方案">遇到问题及解决方案</h2>
+<p>在本地测试的时候，进程停滞了，调试提示 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">auto</span> bucket_0 = std::<span class="hljs-built_in">make_shared</span>&lt;Bucket&gt;(bucket_size_, target_bucket-&gt;<span class="hljs-built_in">GetDepth</span>() + <span class="hljs-number">1</span>);<br></code></pre></td></tr></table></figure>
+这行代码有问题。</p>
+<p>原因是我的逻辑本身没有完善就拿去跑测试了。那为什么会停滞呢？那是因为在进行扩展时，需要将原有的桶分裂成两个新的桶，同时将哈希表中的指针进行重新分配。我的代码中实现了这个分裂过程，但是没有将新的桶的指针更新到哈希表中。这会导致新的键值对无法正确插入，最终导致进程停滞。</p>
+<h1
+id="任务2lru-k页面置换算法-task2-lru-k-replacement-policy">任务2：LRU-k页面置换算法<br>TASK#2:
+LRU-K Replacement Policy</h1>
+<p>算法本身比较复杂，本人是先从leetcode的medium题lru入门，lru-k是在此基础上优化的一种算法。</p>
+<p>先说什么是LRU，LRU是Least Recently
+Used的缩写，即<strong>最近最少使用</strong>算法。leetcode上是通过一个双向队列和一个哈希表实现的。具体来说：</p>
+<blockquote>
+<p>维护一个队列，最近访问的在最底层，最近最少访问的在最上层。</p>
+<p>当队列满了，有新的元素进队时，将最上层的元素出队列，将新元素放到队尾。</p>
+<p>当访问已经存在于队列的中的老元素，将老元素放到队列的最后一位，其他元素往前补位。</p>
+</blockquote>
+<p>而LRU-K中的k，其实是指最近访问页面的次数，所以LRU算法其实就是LRU-1，但是因为仅访问1次就能替代别人，可能会造成“缓存污染”的问题，因此提出了LRU-K的概念。</p>
+<h2 id="算法原理">算法原理</h2>
+<p>与LRU算法不同，LRU-K算法需要维护两个队列：<strong>历史队列</strong>
+和 <strong>缓存队列</strong>。</p>
+<p>历史队列保存着每次访问的页面，而缓存队列则是保存已经访问k次的页面。</p>
+<p>对于一个访问页面，有以下三种情况：</p>
+<ol type="1">
+<li><p>当页面访问次数达到了k次，就将其从历史队列中移除，并将其加入缓冲队列。</p></li>
+<li><p>若页面访问次数尚未达到k次，则将其移到历史队列队首。</p></li>
+<li><p>若页面访问次数大于k_次，将其移到缓冲队列队首。</p></li>
+</ol>
+<p>当我们需要淘汰一个页面时，则先从历史队列淘汰，再从缓冲队列淘汰。这里LRU-k算法可能会有不同的说法，比如理解是
+<em>第k次访问距离现在最久</em>
+的那个页面。但在本项目中，根据项目注释，</p>
+<blockquote>
+<p>驱逐操作中，找到具有最大后向 k
+距离的帧并驱逐该帧。只有标记为“可驱逐”的帧才是驱逐的候选者。 具有少于 k
+个历史值的帧的向后 k 距离将被认为是 +inf。 如果多个帧具有 inf 后向 k
+距离，则驱逐具有最早时间戳的帧。
+框架的成功驱逐应该减少替换器的大小并删除框架的访问历史记录。</p>
+</blockquote>
+<p>这正好与先淘汰历史队列再淘汰缓存队列的操作吻合。</p>
+<p>另外，我的实现类中有以下私有成员： <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">size_t</span> curr_size_&#123;<span class="hljs-number">0</span>&#125;;<br><span class="hljs-type">size_t</span> replacer_size_;<br><span class="hljs-type">size_t</span> k_;<br>std::mutex latch_;<br>std::unordered_map&lt;<span class="hljs-type">frame_id_t</span>, <span class="hljs-type">size_t</span>&gt; use_count_;<br>std::list&lt;<span class="hljs-type">frame_id_t</span>&gt; his_list_, cache_list_;<br>std::unordered_map&lt;<span class="hljs-type">frame_id_t</span>, std::list&lt;<span class="hljs-type">frame_id_t</span>&gt;::iterator&gt; his_map_, cache_map_;<br>std::unordered_map&lt;<span class="hljs-type">frame_id_t</span>, <span class="hljs-type">bool</span>&gt; is_evictable_;<br></code></pre></td></tr></table></figure>
+<code>curr_size_</code> 记录当前可驱逐的页面数量；
+<code>use_count_</code>记录页面的使用次数；<code>his_list_, cache_list_</code>
+分别是 历史队列 和
+缓冲队列；<code>his_map, cache_map_</code>分别记录页面在历史队列或者缓冲队列中的位置；<code>is_evictable_</code>用于记录页面是否可以被驱逐。</p>
+<h2 id="遇到问题及解决方案-1">遇到问题及解决方案</h2>
+<p>其实在做project1的时候，遇到的问题有很多，但是都没有及时记录，现在通过在gradescope的提交记录回忆一下。</p>
+<p>最严重的问题其实是忘记加锁了，在万分仔细地检查逻辑之后发现没有加锁，导致了本地测试能过，而线上测试不能过。</p>
+<p>另外，由于本地测试对于<code>Remove()</code>方法的测试太弱了，导致线上<code>Remove()</code>引发的问题很多，于是在修改这个方法上花了比较多的时间。对于这个方法，在按要求判断是否需要抛出异常时，需要判断<code>!is_evictable_[frame_id]</code>而frame_id不一定存在在表中，所以要修改异常部分代码：
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">if</span> (is_evictable_.<span class="hljs-built_in">find</span>(frame_id) != is_evictable_.<span class="hljs-built_in">end</span>() &amp;&amp; !is_evictable_[frame_id]) &#123;<br>    <span class="hljs-keyword">throw</span> std::<span class="hljs-built_in">exception</span>();<br>  &#125;<br></code></pre></td></tr></table></figure></p>
+<p>在<code>Evict()</code>以及<code>Remove()</code>方法中，需要驱逐或者删除页面的时候，要注意各个成员的<code>erase()</code>顺序，否则会出现<code>heap-use-aftrer-free</code>的错误。</p>
+<h1
+id="任务3缓冲池管理器实例-task-3---buffer-pool-manager-instance">任务3：缓冲池管理器实例<br>Task
+#3 - Buffer Pool Manager Instance</h1>
+<p>这部分没有太难的数据结构与算法上的实现。让人眼花缭乱的是根据注释编写代码。</p>
+<h2 id="部分功能实现">部分功能实现</h2>
+<p>比较复杂的是<code>NewPgImp()</code>：</p>
+<ol type="1">
+<li><p>首先检查缓冲池中是否有可用的空闲页面。如果有，从空闲页面中选择一个页面。否则，从替换器中选择一个可替换的页面。</p></li>
+<li><p>分配新的页面 ID。如果分配失败，则返回 nullptr。</p></li>
+<li><p>更新元数据并pin页面。这里更新两个地方的元数据：</p>
+<p>缓冲池中的 page_table_：从原有页面 ID
+的映射中删除该页面，插入新的页面 ID 和缓冲池中选择的帧 ID 的映射。</p>
+<p>帧表 frame_table_：重置帧的元数据和数据。更新页面 ID 和 pin
+计数，并将 is_dirty_ 设置为 false。
+将新页面插入缓冲池，并且返回该页面的指针。返回前要确保该帧被固定（Pinned），并且更新
+replacer 访问历史。</p></li>
+</ol>
+<p>以及 <code>FetchPgImp()</code>：</p>
+<ol type="1">
+<li><p>在缓冲池中查找目标页面，如果找到则直接返回对应的 Page
+对象，并将该帧设置为不可淘汰（即被固定）。</p></li>
+<li><p>如果目标页面不在缓冲池中，则需要从磁盘中读取该页面并将其载入到缓冲池中。首先需要选择一个可用的帧（令其id为<code>frame_id</code>）来存放该页面，此过程与<code>NewPgImp()</code>中的过程类似。</p></li>
+<li><p>如果找到了可用的帧，则需要将旧页面从该帧中移除，然后读取目标页面的数据并将其存入该帧中。如果该帧原来的页面是脏页面，则需要将其写回磁盘。</p></li>
+<li><p>接着调用<code>disk_manager_-&gt;ReadPage()</code>从磁盘读取数据存到<code>frame_id</code>处。</p></li>
+<li><p>最后需要将该帧设置为不可淘汰（即被固定），并将其访问历史记录到replacer中，以便在进行淘汰时能够选择最近最少访问的帧。然后返回<code>pages_[frame_id]</code>。</p>
+<p>需要注意的是，如果在创建新页面时发现内存不足，则会返回
+nullptr。</p></li>
+</ol>
+<p>过多的此处就不赘述了，task3就是按规矩办事，别多办别漏办别办错就行。</p>
+<h2 id="遇到问题及解决方案-2">遇到问题及解决方案</h2>
+<p>出现LeakSanitizer: detected memory
+leaks问题，并且在gradescope测试中的HardTest总是过不了，最后发现是在一个<code>free_list_</code>的取帧操作中忘记pop了。</p>
+<p>内存泄漏可能是程序的一个严重问题，可以导致程序崩溃、性能下降等问题，因此在开发过程中应该注意内存管理，避免出现内存泄漏问题。</p>
+<p>最后附上通关图！！！</p>
+<figure>
+<img src="/images/CMU15445-PROJ1/proj1_100.png" srcset="/img/loading.gif" lazyload alt="满分通关！！！" />
+<figcaption aria-hidden="true">满分通关！！！</figcaption>
+</figure>
+<figure>
+<img src="/images/CMU15445-PROJ1/leaderboard.png" srcset="/img/loading.gif" lazyload alt="通关！！！" />
+<figcaption aria-hidden="true">通关！！！</figcaption>
+</figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%BC%80%E5%8F%91/" class="category-chain-item">开发</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/C/">#C++</a>
+      
+        <a href="/tags/CMU15-445/">#CMU15-445</a>
+      
+        <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">#数据库</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CMU15-445 PROJECT1 BUFFER POOL MANAGER 项目记录</div>
+      <div>http://example.com/2023/03/06/CMU15445-PROJ1/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Melrose Wei</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/03/08/diffusion%E4%BA%BA%E8%84%B8/" title="扩散模型（diffusion）论文笔记（2023.3）">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">扩散模型（diffusion）论文笔记（2023.3）</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/02/01/%E4%BA%BA%E8%84%B8%E5%8C%BF%E5%90%8D%E5%8C%96%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%EF%BC%882023.1%EF%BC%89/" title="人脸匿名化论文笔记（2023.1）">
+                        <span class="hidden-mobile">人脸匿名化论文笔记（2023.1）</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'melrose12138/commit-utterances');
+      s.setAttribute('issue-term', 'title');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

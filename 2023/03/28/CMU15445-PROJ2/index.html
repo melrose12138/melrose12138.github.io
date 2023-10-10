@@ -1,0 +1,894 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/zju.png">
+  <link rel="icon" href="/img/zju.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Melrose Wei">
+  <meta name="keywords" content="生活，灵感，猫咪，C++开发">
+  
+    <meta name="description" content="Checkpoint1 Single Thread B+Tree B_PLUS_TREE_PAGE Task1 的实现非常简单，都是一些普通的 Getter 和 Setter。 首先更深入了解以下Page的含义。Page.h中关于Page的成员定义如下： 12345678910&#x2F;** The actual data that is stored within a page. *&#x2F;char data">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMU15-445 PROJECT2 B+TREE INDEX 项目记录">
+<meta property="og:url" content="http://example.com/2023/03/28/CMU15445-PROJ2/index.html">
+<meta property="og:site_name" content="卓先生的小站">
+<meta property="og:description" content="Checkpoint1 Single Thread B+Tree B_PLUS_TREE_PAGE Task1 的实现非常简单，都是一些普通的 Getter 和 Setter。 首先更深入了解以下Page的含义。Page.h中关于Page的成员定义如下： 12345678910&#x2F;** The actual data that is stored within a page. *&#x2F;char data">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/CMU15445-PROJ2/tree.dot.png">
+<meta property="og:image" content="http://example.com/images/CMU15445-PROJ2/p2cp1.png">
+<meta property="og:image" content="http://example.com/images/CMU15445-PROJ2/p2cp2.png">
+<meta property="og:image" content="http://example.com/images/CMU15445-PROJ2/p2%E9%80%9A%E5%85%B3%EF%BC%81%EF%BC%81%EF%BC%81.png">
+<meta property="article:published_time" content="2023-03-28T11:52:49.000Z">
+<meta property="article:modified_time" content="2023-04-06T13:09:22.297Z">
+<meta property="article:author" content="Melrose Wei">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="CMU15-445">
+<meta property="article:tag" content="数据库">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/images/CMU15445-PROJ2/tree.dot.png">
+  
+  
+  
+  <title>CMU15-445 PROJECT2 B+TREE INDEX 项目记录 - 卓先生的小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="卓先生的小站" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 80vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>卓先生的小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/lanny.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CMU15-445 PROJECT2 B+TREE INDEX 项目记录"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-28 19:52" pubdate>
+          2023年3月28日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          11k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          88 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+        <div class="scroll-down-bar">
+          <i class="iconfont icon-arrowdown"></i>
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">CMU15-445 PROJECT2 B+TREE INDEX 项目记录</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="checkpoint1-single-thread-btree">Checkpoint1 Single Thread
+B+Tree</h1>
+<h2 id="b_plus_tree_page">B_PLUS_TREE_PAGE</h2>
+<p>Task1 的实现非常简单，都是一些普通的 Getter 和 Setter。</p>
+<p>首先更深入了解以下Page的含义。<code>Page.h</code>中关于Page的成员定义如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">/** The actual data that is stored within a page. */</span><br><span class="hljs-type">char</span> data_[BUSTUB_PAGE_SIZE]&#123;&#125;;<br><span class="hljs-comment">/** The ID of this page. */</span><br><span class="hljs-type">page_id_t</span> page_id_ = INVALID_PAGE_ID;<br><span class="hljs-comment">/** The pin count of this page. */</span><br><span class="hljs-type">int</span> pin_count_ = <span class="hljs-number">0</span>;<br><span class="hljs-comment">/** True if the page is dirty, i.e. it is different from its corresponding page on disk. */</span><br><span class="hljs-type">bool</span> is_dirty_ = <span class="hljs-literal">false</span>;<br><span class="hljs-comment">/** Page latch. */</span><br>ReaderWriterLatch rwlatch_;<br></code></pre></td></tr></table></figure>
+<p>其中，data_ 是实际存放 page 数据的地方，大小为 BUSTUB_PAGE_SIZE，为
+4KB。其他的成员是 page 的 metadata。</p>
+<h2 id="b_plus_tree_page插入">B_PLUS_TREE_PAGE插入</h2>
+<p><code>b_plus_tree_page</code> 是另外两个 page
+的父类。有以下私有成员：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp">IndexPageType page_type_;<br><span class="hljs-type">lsn_t</span> lsn_;<br><span class="hljs-type">int</span> size_;<br><span class="hljs-type">int</span> max_size_;<br><span class="hljs-type">page_id_t</span> parent_page_id_;<br><span class="hljs-type">page_id_t</span> page_id_;<br></code></pre></td></tr></table></figure>
+<h2 id="b_plus_tree_internal_page">B_PLUS_TREE_INTERNAL_PAGE</h2>
+<p><code>b_plus_tree_internal_page</code>对应 B+
+树中的内部节点。不同的是，他有以下这个私有变量：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp">MappingType array_[<span class="hljs-number">1</span>];<br></code></pre></td></tr></table></figure>
+<p>internal page 中没有新的 metadata。这里是一种特殊写法，叫flexible
+array。</p>
+<blockquote>
+<p>在C++中，flexible
+array是指在结构体的最后一个成员位置定义一个未知大小的数组，这个数组不占用结构体的空间，只有在分配内存时才会为其分配空间。这里的
+<code>array[1]</code> 利用 flexible array 的特性来自动填充 page data 4KB
+减掉 header 24byte 后剩余的内存。剩下的这些内存用来存放 KV 对。</p>
+</blockquote>
+<p>internal page 中，KV 对的 K 是能够比较大小的索引，V 是 page
+id，用来指向下一层的节点。</p>
+<p>这里有个问题，项目要求一个 Key 为空，这是为什么呢？ &gt; 主要是因为在
+internal page 中，n 个 Key 可以将数轴划分为 n+1 个区域，也就对应着 n+1
+个 value，则需要有一个key是空的，这里就统一为第一个Key为空就行了。</p>
+<h2 id="b_plus_tree_leaf_page">B_PLUS_TREE_LEAF_PAGE</h2>
+<p>leaf page 多了一个成员变量<code>next_page_id</code>，指向下一个 leaf
+page，所以前面<code>#define LEAF_PAGE_HEADER_SIZE 28</code>。插入ecord
+id 用于识别表中的某一条数据。leaf page 的 KV 对是一一对应的，不像
+internal page 的 value 多一个。
+这边主要有三个任务：查找<code>GetValue()</code>、插入<code>Insert()</code>、删除<code>Remove()</code>。</p>
+<h2 id="查找">查找</h2>
+<p>查找相对来说比较简单，基本思路是
+先找到key对应的叶子页面<code>FindLeaf()</code>，然后在这个叶子节点中找到key对应的value
+<code>KeyIndex()</code>。也就是实现这两步走。</p>
+<p>在实现<code>FindLeaf()</code>时： 拿到一个 key 需要查找对应的 value
+，首先需要经由 internal page 递归地向下查找，最终找到 key 所在的 leaf
+page。在它的一般实现中都会加入<code>leftMost</code>和<code>rightMost</code>这两个布尔参数，以便在后面迭代器的实现时找到最左边（或最右边）的叶子节点，放在这里也是因为可以顺便找到，只需要：
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">if</span> (leftMost) &#123;<br>  child_node_page_id = i_node-&gt;<span class="hljs-built_in">ValueAt</span>(<span class="hljs-number">0</span>);<br>&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (rightMost) &#123;<br>  child_node_page_id = i_node-&gt;<span class="hljs-built_in">ValueAt</span>(i_node-&gt;<span class="hljs-built_in">GetSize</span>() - <span class="hljs-number">1</span>);<br>&#125; <span class="hljs-keyword">else</span> &#123;<br>  child_node_page_id = i_node-&gt;<span class="hljs-built_in">Lookup</span>(key, comparator_);<br>&#125;<br></code></pre></td></tr></table></figure></p>
+<p>在实现<code>KeyIndex()</code>时，就是对二分法的一个复习，此处就不多赘述了。但二分法还是不够熟练，很多次找bug都会很不自信地去检查它，虽然没错，但就是体现出很不自信！！！</p>
+<h2 id="插入">插入</h2>
+<ol type="1">
+<li>如果是空树，创建一个叶节点作为根(<code>StartNewTree</code>)。</li>
+<li>不管三七二十一直接插入。（这是我的做法，而且前面提到的flexible
+array也允许我这样做。这样还有一个好处就是，现在插入后面分裂就省心了，在这基础上split就可以，不需要再惦记这个插入了。）如果不需要split，那么到这里也就结束了。麻烦的在下面需要分裂的情况。</li>
+<li>split
+创建一个新的叶节点，将原节点的一半内容拷贝到新节点(<code>MaveHalfTo</code>)，分裂点的键插入父节点(<code>InsertIntoParent</code>)，该键对应的值指向新的叶节点。如果这个时候父节点的达到了MaxSize，则需要递归分裂向上插入。</li>
+</ol>
+<p>问题有蛮多的，全都放到最后一个section记录了。</p>
+<p>在做这些最基本实现的时候，课程还提供了可视化debug方法，非常方便。在后面的问题中我也经常用到它。在解决纯算法上的问题的过程还是非常有意思的。（变相说后面的并发简直折磨人）</p>
+<p>附上一张insert()建树图 <img src="/images/CMU15445-PROJ2/tree.dot.png" srcset="/img/loading.gif" lazyload
+alt="insert测试小树" /></p>
+<h2 id="删除">删除</h2>
+<h3
+id="一找到目标key的叶子节点并删除键值对">一：找到目标key的叶子节点并删除键值对</h3>
+<p>调用<code>FindLeaf()</code>找到对应的叶子页面，然后调用<code>KeyIndex()</code>找到item，用叶子页面的remove操作删除之，记得更新size.</p>
+<p>接下来，要判断一下删除后叶子页面是否到达了MinSize，没有到达的话，就可以直接return；否则就需要进行Coalesce或Redistribute操作。</p>
+<h3
+id="二coalesce或redistribute操作逻辑">二：Coalesce或Redistribute操作逻辑</h3>
+<ul>
+<li><p>如果当前是根节点，则调用<code>AdjustRoot</code>对根节点进行处理。此时只需要更新<code>root_page_id_</code>为<code>INVALID_PAGE_ID</code>即可。</p></li>
+<li><p>然后我们需要找到它的兄弟节点，这就要先找到它的父节点。这里要选左兄弟还是右兄弟呢，其实都可以，我没有找到什么优雅的方法，就左右兄弟分别写了一遍后面的逻辑，用左兄弟的话传一个<code>true</code>，否则传一个<code>false</code>。脑子比不过人家我就勤奋一点嘛(dege)。这里就首先找到当前节点对应的index，如果<code>index&gt;0</code>则说明它一定有左兄弟，那就用左兄弟；否则咱就是最左边的，只有一个右兄弟。</p></li>
+<li><p>那是用Coalesce还是Redistribute呢？判断一下：如果 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">if</span> (sibling_node-&gt;<span class="hljs-built_in">GetSize</span>() &gt; sibling_node-&gt;<span class="hljs-built_in">GetMinSize</span>()) <br></code></pre></td></tr></table></figure>
+就用Redistribute，否则合并起来就吃成胖子了这可不行。</p></li>
+</ul>
+<h3 id="三redistribute">三：Redistribute</h3>
+<p>这里主要注意一下叶子页面和内部页面的处理方式有些不同就是了。</p>
+<p>对于叶子页面，如果从左边借（也就是说传过来的是<code>true</code>），那么左边好邻居给出去的得是最后那个，我得把他放在第一个，其他的往后稍稍；反之亦然，便不赘述。</p>
+<p>然后再把父节点对应index的key更新一下。</p>
+<p>对于内部页面，借完之后还得更新一下借来那家伙的子节点的父节点。你现在换了个爹辣！</p>
+<p>更具体的，用代码语言描述，就是前面说的如果是叶子页面从左边借的情况（也就是说传过来的是<code>true</code>）：
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp">neighbor_leaf_node-&gt;<span class="hljs-built_in">MoveLastToFrontOf</span>(leaf_node);<br>parent-&gt;<span class="hljs-built_in">SetKeyAt</span>(index, leaf_node-&gt;<span class="hljs-built_in">KeyAt</span>(<span class="hljs-number">0</span>));<br></code></pre></td></tr></table></figure></p>
+<h3 id="四coalesce">四：Coalesce</h3>
+<p>这里也要注意叶子页面和内部页面的不同处理方式。</p>
+<p>对于叶子页面，将后面节点的全部item移到前面的节点即可。然后父节点remove对应index的item。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">auto</span> *leaf_node = <span class="hljs-built_in">reinterpret_cast</span>&lt;LeafPage *&gt;(node);<br><span class="hljs-keyword">auto</span> *prev_leaf_node = <span class="hljs-built_in">reinterpret_cast</span>&lt;LeafPage *&gt;(neighbor_node);<br>leaf_node-&gt;<span class="hljs-built_in">MoveAllTo</span>(prev_leaf_node);<br></code></pre></td></tr></table></figure>
+<p>对于内部页面，<code>MoveAllTo()</code>函数中还需要注意更新孩子节点的父节点pageid。</p>
+<p>这里贴一下<code>CopyNFrom()</code>函数，在所有与<code>Move</code>相关的函数中经常用到，这里以内部节点的版本作为示例。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">INDEX_TEMPLATE_ARGUMENTS</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">B_PLUS_TREE_INTERNAL_PAGE_TYPE::CopyNFrom</span><span class="hljs-params">(MappingType *items, <span class="hljs-type">int</span> size, BufferPoolManager *buffer_pool_manager)</span> </span>&#123;<br>  std::<span class="hljs-built_in">copy</span>(items, items + size, array_ + <span class="hljs-built_in">GetSize</span>());<br><br>  <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; size; i++) &#123;<br>    <span class="hljs-keyword">auto</span> page = buffer_pool_manager-&gt;<span class="hljs-built_in">FetchPage</span>(<span class="hljs-built_in">ValueAt</span>(i + <span class="hljs-built_in">GetSize</span>()));<br>    <span class="hljs-keyword">auto</span> *node = <span class="hljs-built_in">reinterpret_cast</span>&lt;BPlusTreePage *&gt;(page-&gt;<span class="hljs-built_in">GetData</span>());<br>    node-&gt;<span class="hljs-built_in">SetParentPageId</span>(<span class="hljs-built_in">GetPageId</span>());<br>    buffer_pool_manager-&gt;<span class="hljs-built_in">UnpinPage</span>(page-&gt;<span class="hljs-built_in">GetPageId</span>(), <span class="hljs-literal">true</span>);<br>  &#125;<br><br>  <span class="hljs-built_in">IncreaseSize</span>(size);<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>最后因为合并了，需要向上递归，即： <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">return</span> <span class="hljs-built_in">CoalesceOrRedistribute</span>(parent, transaction);<br></code></pre></td></tr></table></figure></p>
+<p>到最后，无论是合并还是往旁边借，都需要unpin一下。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp">buffer_pool_manager_-&gt;<span class="hljs-built_in">UnpinPage</span>(parent_page-&gt;<span class="hljs-built_in">GetPageId</span>(), <span class="hljs-literal">true</span>);<br>sibling_page-&gt;<span class="hljs-built_in">WUnlatch</span>();<br>buffer_pool_manager_-&gt;<span class="hljs-built_in">UnpinPage</span>(sibling_page-&gt;<span class="hljs-built_in">GetPageId</span>(), <span class="hljs-literal">true</span>);<br></code></pre></td></tr></table></figure>
+<h1 id="checkpoint2-multi-thread-btree">Checkpoint2 Multi Thread
+B+Tree</h1>
+<h2 id="index-iterator">Index Iterator</h2>
+<p>我在实现时用了以下这些私有成员： <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">private</span>:<br> <span class="hljs-comment">// add your own private member variables here</span><br> BufferPoolManager *buffer_pool_manager_;<br> Page *page_;<br> LeafPage *leaf_ = <span class="hljs-literal">nullptr</span>;<br> <span class="hljs-type">int</span> index_ = <span class="hljs-number">0</span>;<br></code></pre></td></tr></table></figure>
+大致思路也很简单：</p>
+<p>保存当前节点及当前index，++的时候只要判断是否到下个节点，如果到了下个点，将index置0；否则index++即可。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs cpp">INDEX_TEMPLATE_ARGUMENTS<br><span class="hljs-keyword">auto</span> INDEXITERATOR_TYPE::<span class="hljs-keyword">operator</span>++() -&gt; INDEXITERATOR_TYPE &amp; &#123;<br>  <span class="hljs-keyword">if</span> (index_ == leaf_-&gt;<span class="hljs-built_in">GetSize</span>() - <span class="hljs-number">1</span> &amp;&amp; leaf_-&gt;<span class="hljs-built_in">GetNextPageId</span>() != INVALID_PAGE_ID) &#123;<br>    <span class="hljs-keyword">auto</span> next_page = buffer_pool_manager_-&gt;<span class="hljs-built_in">FetchPage</span>(leaf_-&gt;<span class="hljs-built_in">GetNextPageId</span>());<br>    next_page-&gt;<span class="hljs-built_in">RLatch</span>();<br>    page_-&gt;<span class="hljs-built_in">RUnlatch</span>();<br>    buffer_pool_manager_-&gt;<span class="hljs-built_in">UnpinPage</span>(page_-&gt;<span class="hljs-built_in">GetPageId</span>(), <span class="hljs-literal">false</span>);<br>    page_ = next_page;<br>    leaf_ = <span class="hljs-built_in">reinterpret_cast</span>&lt;LeafPage *&gt;(page_-&gt;<span class="hljs-built_in">GetData</span>());<br>    index_ = <span class="hljs-number">0</span>;<br>  &#125; <span class="hljs-keyword">else</span> &#123;<br>    index_++;<br>  &#125;<br>  <span class="hljs-keyword">return</span> *<span class="hljs-keyword">this</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>至于<code>begin()</code>和<code>end()</code>的实现，调用前面的<code>FindLeaf()</code>即可，此处不多追述了。</p>
+<p>至此checkpoint1通关。</p>
+<figure>
+<img src="/images/CMU15445-PROJ2/p2cp1.png" srcset="/img/loading.gif" lazyload alt="CheckPoint1搞定！！" />
+<figcaption aria-hidden="true">CheckPoint1搞定！！</figcaption>
+</figure>
+<h2 id="concurrent-index">Concurrent Index</h2>
+<p>课程中说了你一把大锁是肯定过不了我们的测试滴，所以我就没有尝试了，直接开始研究实现latch
+crabbing的方法了。</p>
+<p><strong>基本思想</strong>： 先锁住 parent page， 再锁住 child
+page。假设 child page 是安全的，则释放 parent page 的锁。</p>
+<p><strong>安全</strong>指当前 page 在当前操作下一定不会发生
+split/steal/merge。</p>
+<p>同时，安全对不同操作的定义是不同的。</p>
+<p>Search 时，任何节点都安全；Insert 时，判断 MaxSize；Delete 时，判断
+MinSize。</p>
+<p>写到这里可以看到，<code>FindLeaf()</code>的实现是非常重要的。这里贴上安全判断、加锁及释放的操作。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">if</span> (operation == Operation::SEARCH) &#123;<br>  child_page-&gt;<span class="hljs-built_in">RLatch</span>();<br>  page-&gt;<span class="hljs-built_in">RUnlatch</span>();<br>  buffer_pool_manager_-&gt;<span class="hljs-built_in">UnpinPage</span>(page-&gt;<span class="hljs-built_in">GetPageId</span>(), <span class="hljs-literal">false</span>);<br>&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (operation == Operation::INSERT) &#123;<br>  child_page-&gt;<span class="hljs-built_in">WLatch</span>();<br>  transaction-&gt;<span class="hljs-built_in">AddIntoPageSet</span>(page);<br><br>  <span class="hljs-comment">// child node is safe, release all locks on ancestors</span><br>  <span class="hljs-keyword">if</span> (child_node-&gt;<span class="hljs-built_in">IsLeafPage</span>() &amp;&amp; child_node-&gt;<span class="hljs-built_in">GetSize</span>() &lt; child_node-&gt;<span class="hljs-built_in">GetMaxSize</span>() - <span class="hljs-number">1</span>) &#123;<br>    <span class="hljs-built_in">ReleaseLatchFromQueue</span>(transaction);<br>    &#125;<br>    <span class="hljs-keyword">if</span> (!child_node-&gt;<span class="hljs-built_in">IsLeafPage</span>() &amp;&amp; child_node-&gt;<span class="hljs-built_in">GetSize</span>() &lt; child_node-&gt;<span class="hljs-built_in">GetMaxSize</span>()) &#123;<br>    <span class="hljs-built_in">ReleaseLatchFromQueue</span>(transaction);<br>  &#125;<br>&#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (operation == Operation::DELETE) &#123;<br>  child_page-&gt;<span class="hljs-built_in">WLatch</span>();<br>  transaction-&gt;<span class="hljs-built_in">AddIntoPageSet</span>(page);<br><br>  <span class="hljs-comment">// child node is safe, release all locks on ancestors</span><br>  <span class="hljs-keyword">if</span> (child_node-&gt;<span class="hljs-built_in">GetSize</span>() &gt; child_node-&gt;<span class="hljs-built_in">GetMinSize</span>()) &#123;<br>    <span class="hljs-built_in">ReleaseLatchFromQueue</span>(transaction);<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h3 id="insert">Insert</h3>
+<p><strong>Insert操作</strong>中，需要进行的锁操作有： 1.
+最开始的根节点的写锁，并且将nullptr加入transaction。（这是我的实现方法，在释放队列中个节点锁的时候进行判断，如果是空指针则unlock根节点锁）
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs cpp">root_page_id_latch_.<span class="hljs-built_in">WLock</span>();<br>transaction-&gt;<span class="hljs-built_in">AddIntoPageSet</span>(<span class="hljs-literal">nullptr</span>);<br></code></pre></td></tr></table></figure> 对应的释放写锁的函数如下。</p>
+<p>需要注意几个问题：</p>
+<ul>
+<li><p>先解锁再unpin！！因为 Unpin 后这个 page 的 <code>pin_count</code>
+可能降为 0，buffer_pool_manager 可能会将该 Page 指针的内容改写为另一个
+Page 的，导致 <code>Unlock</code> 错误。</p></li>
+<li><p>如果是nullptr则释放root_page_id_latch_的写锁。</p></li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">INDEX_TEMPLATE_ARGUMENTS</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">BPLUSTREE_TYPE::ReleaseLatchFromQueue</span><span class="hljs-params">(Transaction *transaction)</span> </span>&#123;<br>  <span class="hljs-keyword">while</span> (!transaction-&gt;<span class="hljs-built_in">GetPageSet</span>()-&gt;<span class="hljs-built_in">empty</span>()) &#123;<br>    Page *page = transaction-&gt;<span class="hljs-built_in">GetPageSet</span>()-&gt;<span class="hljs-built_in">front</span>();<br>    transaction-&gt;<span class="hljs-built_in">GetPageSet</span>()-&gt;<span class="hljs-built_in">pop_front</span>();<br>    <span class="hljs-keyword">if</span> (page == <span class="hljs-literal">nullptr</span>) &#123;<br>      <span class="hljs-keyword">this</span>-&gt;root_page_id_latch_.<span class="hljs-built_in">WUnlock</span>();<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>      page-&gt;<span class="hljs-built_in">WUnlatch</span>();<br>      buffer_pool_manager_-&gt;<span class="hljs-built_in">UnpinPage</span>(page-&gt;<span class="hljs-built_in">GetPageId</span>(), <span class="hljs-literal">false</span>);<br>    &#125;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<ol type="1">
+<li><p>在return之前，解除<code>FindLeaf()</code>找到的page的写锁，<code>leaf_page-&gt;WUnlatch();</code></p></li>
+<li><p>使用<code>ReleaseLatchFromQueue</code>的时机。此处列举几处：</p></li>
+</ol>
+<ul>
+<li><p><code>StartNewTree()</code>之后，主要是为了释放
+<code>root_page_id_latch_</code>；</p></li>
+<li><p>遇到重复的key或者无需进行分裂操作，return之前。</p></li>
+<li><p><code>InsertIntoParent</code>中，无需继续递归，直接<code>return</code>的时候。</p></li>
+</ul>
+<p>其实就是Insert()操作彻底完成的时候。</p>
+<ol type="1">
+<li>释放锁的<strong>顺序问题</strong>。transaction 就是 Bustub
+里的事务。释放锁的顺序可以从上到下也可以从下到上，但由于上层节点的竞争一般更加激烈，所以最好是
+<strong>从上到下</strong> 地释放锁。这样可以获取更好的性能。</li>
+</ol>
+<h3 id="remove">Remove</h3>
+<ol type="1">
+<li>最开始的根节点的写锁，并且将nullptr加入transaction。(跟Insert类似)</li>
+<li>无需合并或借item，或者调用<code>coalesceOrRedistribute()</code>之后，<code>leaf_page-&gt;WUnlatch();</code>(跟Insert类似)</li>
+<li>使用<code>ReleaseLatchFromQueue</code>的时机。(跟Insert类似)</li>
+<li>说些不同的，就是<code>sibling_page-&gt;WLatch();</code>找到兄弟节点之后要及时对他加锁。在对父节点解锁并unpin完毕后方可对sibling_page进行解锁。</li>
+</ol>
+<p>另外，unpin一定要好好检查，并发测试出现的很多错误都是unpin操作不正确。</p>
+<p>最后要记得delete掉所有需要delete的page。</p>
+<blockquote>
+<p><code>coalesceOrRedistribute()</code>的返回值是表明本page是否需要被delete。调用出来的时候需要进行一次判断。</p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs cpp">std::for_each(transaction-&gt;<span class="hljs-built_in">GetDeletedPageSet</span>()-&gt;<span class="hljs-built_in">begin</span>(), transaction-&gt;<span class="hljs-built_in">GetDeletedPageSet</span>()-&gt;<span class="hljs-built_in">end</span>(),<br>                [&amp;bpm = buffer_pool_manager_](<span class="hljs-type">const</span> <span class="hljs-type">page_id_t</span> page_id) &#123; bpm-&gt;<span class="hljs-built_in">DeletePage</span>(page_id); &#125;);<br>  transaction-&gt;<span class="hljs-built_in">GetDeletedPageSet</span>()-&gt;<span class="hljs-built_in">clear</span>();<br></code></pre></td></tr></table></figure>
+<h1 id="遇到问题及解决方法">遇到问题及解决方法</h1>
+<ol type="1">
+<li><p>InsertTest1中结果非常离谱。 <figure class="highlight xl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs xl">Expected equality of these values:<br><span class="hljs-function"><span class="hljs-title">root_as_leaf</span>-&gt;</span>GetSize()<br>Which <span class="hljs-keyword">is</span>: <span class="hljs-number">27504</span><br><span class="hljs-number">1</span><br></code></pre></td></tr></table></figure>
+这个Size()的错误一看就不像是对size_的错误操作造成的。查看测试代码文件，发现未补全<code>GetRootPageId()</code>函数。补全后错误解决。</p></li>
+<li><p>InsertTest2中有结果不正确 <figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">Expected</span> equality of these values:<br>  <span class="hljs-attribute">rids</span>[<span class="hljs-number">0</span>].GetSlotNum()<br>    <span class="hljs-attribute">Which</span> is: <span class="hljs-number">5</span><br>  <span class="hljs-attribute">value</span><br>    <span class="hljs-attribute">Which</span> is: <span class="hljs-number">4</span><br></code></pre></td></tr></table></figure>
+检查逻辑发现<code>InsertIntoParent()</code>的边界条件判断中<code>if(parent_node-&gt;GetSize() == parent_node-&gt;GetMaxSize())</code>应当改为<code>if(parent_node-&gt;GetSize() == parent_node-&gt;GetMaxSize()-1)</code>，这是因为parent_node一定是Internal
+page，而Internal page的第一个key是空出来而不计入size的。</p></li>
+<li><p>InsertTest3中结果有问题，GetValue()始终得到5.
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">Expected</span> equality of these values:<br>  <span class="hljs-attribute">rids</span>[<span class="hljs-number">0</span>].GetSlotNum()<br>    <span class="hljs-attribute">Which</span> is: <span class="hljs-number">5</span><br>  <span class="hljs-attribute">value</span><br>    <span class="hljs-attribute">Which</span> is: <span class="hljs-number">4</span><br></code></pre></td></tr></table></figure></p></li>
+</ol>
+<p>到这一步的时候我才使用项目提供的<code>b_plus_tree_printer</code>查看树的形状，发现乱七八糟的，于是查找原因，想起来忘记在intenal
+page分裂并且转移元素后改变子结点的parentid。
+在<code>MoveHalfTo()</code>加入以下步骤，完善建树逻辑。</p>
+<p><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; recipent-&gt;<span class="hljs-built_in">GetSize</span>(); ++i) &#123;<br>  <span class="hljs-keyword">auto</span> child_page = buffer_pool_manager-&gt;<span class="hljs-built_in">FetchPage</span>(recipent-&gt;<span class="hljs-built_in">ValueAt</span>(i));<br>  BPlusTreePage* child_node = <span class="hljs-built_in">reinterpret_cast</span>&lt;BPlusTreePage*&gt;(child_page-&gt;<span class="hljs-built_in">GetData</span>());<br>  <span class="hljs-built_in">assert</span>(child_node != <span class="hljs-literal">nullptr</span>);<br>  <span class="hljs-keyword">if</span> (child_node-&gt;<span class="hljs-built_in">GetParentPageId</span>() != recipent_page_id) &#123;<br>    child_node-&gt;<span class="hljs-built_in">SetParentPageId</span>(recipent_page_id);<br>    buffer_pool_manager-&gt;<span class="hljs-built_in">UnpinPage</span>(child_node-&gt;<span class="hljs-built_in">GetPageId</span>(), <span class="hljs-literal">true</span>);<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure></p>
+<p>可在这之后还是有问题，就是倒序插入元素时，发现后几个数都是相同的。很容易就想到应该是在叶子页面的<code>Insert()</code>步骤中出错了。错误真的是有些蠢，就是插入元素在前面的时候，需要把后面的元素移到后面去为它腾出位置，此时应该从后往前遍历，而我从前往后遍历导致pos后面那家伙把剩下的全部覆盖掉了，就是一个初学c第一次写insert可能会犯的愚蠢错误....</p>
+<ol start="4" type="1">
+<li><p>InsertTest3卡住了，应该是关于迭代器实现的问题。</p>
+<p>排查循环的问题，只有在<code>end()</code>的实现中存在循环。循环条件没毛病<code>while (leaf-&gt;GetNextPageId() != INVALID_PAGE_ID)</code>，但我想leaf
+page的nextpageid的处理，中间的node肯定都没有什么问题，最后的那个怎么办呢？此时答案就显而易见了，忘记初始化成INVALID_PAGE_ID了...</p></li>
+<li><p>DeleteTest中，删除操作不正确，好像有少删的情况，因为实际删除后的size比expected
+size大。</p>
+<p>使用可视化工具排查问题时，提示 <figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">Warning</span>: COLSPAN value cannot be <span class="hljs-number">0</span> - ignored<br><span class="hljs-attribute">Warning</span>: COLSPAN value cannot be <span class="hljs-number">0</span> - ignored<br></code></pre></td></tr></table></figure></p></li>
+</ol>
+<p>先是脑补了一遍删除一个最左边节点然后其右边节点与其合并的过程，发现没有什么问题。接着去检查一些简单的方法，发现是internal
+page的 <code>ValueIndex()</code>方法出现错误。不仔细。</p>
+<p><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">INDEX_TEMPLATE_ARGUMENTS</span><br><span class="hljs-function"><span class="hljs-keyword">auto</span> <span class="hljs-title">B_PLUS_TREE_INTERNAL_PAGE_TYPE::ValueIndex</span><span class="hljs-params">(<span class="hljs-type">const</span> ValueType &amp;value)</span> -&gt; <span class="hljs-type">int</span></span>&#123;<br>  <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-built_in">GetSize</span>(); ++i) &#123;<br>    <span class="hljs-keyword">if</span>(array_[i].second == value)&#123;<br>      <span class="hljs-keyword">return</span> i;<br>    &#125;<br>  &#125;<br>  <span class="hljs-keyword">return</span> <span class="hljs-built_in">GetSize</span>();<br>&#125;<br></code></pre></td></tr></table></figure></p>
+<p>正确代码如上，我的循环初始条件写成了<code>i=1</code>，因为想到这是internal
+page所以第一个元素没有key，可是拜托你这里找的是<code>value</code>啊喂！</p>
+<ol start="6" type="1">
+<li>DeleteTest
+size还是偏大，可是利用可视化工具首先发现内部节点指向混乱，前去完善interal
+page 的
+<code>MoveFirstToEndOf()</code>以及<code>MoveLastToFrontOf()</code>两个方法的逻辑。接着利用可视化工具进行测试没有发现任何问题但还是无法通过测试。于是查看测试代码逻辑，发现其调用<code>GetValue()</code>函数，而我调用<code>KeyIndex()</code>后缺少对得到的index的大小判断，加上后顺利通过本地测试！</li>
+</ol>
+<p>至此checkpoint2通关。</p>
+<figure>
+<img src="/images/CMU15445-PROJ2/p2cp2.png" srcset="/img/loading.gif" lazyload alt="CheckPoint2搞定！！" />
+<figcaption aria-hidden="true">CheckPoint2搞定！！</figcaption>
+</figure>
+<p>最后leaderboard名次是34，还是有一定优化空间的。。。</p>
+<figure>
+<img src="/images/CMU15445-PROJ2/p2通关！！！.png" srcset="/img/loading.gif" lazyload
+alt="B+树leaderboard" />
+<figcaption aria-hidden="true">B+树leaderboard</figcaption>
+</figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%BC%80%E5%8F%91/" class="category-chain-item">开发</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/C/">#C++</a>
+      
+        <a href="/tags/CMU15-445/">#CMU15-445</a>
+      
+        <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">#数据库</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CMU15-445 PROJECT2 B+TREE INDEX 项目记录</div>
+      <div>http://example.com/2023/03/28/CMU15445-PROJ2/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Melrose Wei</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月28日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/04/04/CMU15445-PROJ3/" title="CMU15-445 PROJECT3 Query Executor 项目记录">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CMU15-445 PROJECT3 Query Executor 项目记录</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/03/08/diffusion%E4%BA%BA%E8%84%B8/" title="扩散模型（diffusion）论文笔记（2023.3）">
+                        <span class="hidden-mobile">扩散模型（diffusion）论文笔记（2023.3）</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'melrose12138/commit-utterances');
+      s.setAttribute('issue-term', 'title');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
