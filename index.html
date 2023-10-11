@@ -348,7 +348,7 @@ mjx-container[display="true"] + br {
       
       <a class="index-excerpt index-excerpt__noimg" href="/2023/10/07/6.824-lab2-raft/" target="_self">
         <div>
-          Part 2A - Leader Election 实现 Raft leader election 和 heartbeats（没有 log entries 的 AppendEntries RPC）。 2A 的目标是选出单个leader，如果没有故障，leader将继续担任；如果 老leader 发生故障 或 发往/来自 老leader的数据包丢失，则新的leader将接管。 选举发起逻辑 在 Ma
+          6.824lab2要求实现raft算法，将 Raft 实现为 Go 对象类型。 Raft通过选举leader、日志复制和安全性三个子问题来解决共识问题。leader负责管理日志，接受客户端的日志条目，并将其复制到其他服务器。Raft通过随机化方法简化了leader选举算法。Raft服务器之间通过RPC进行通信，基本共识算法只需要两种类型的RPC。Raft的日志复制机制保证了线性化语义，即每个操作都
         </div>
       </a>
 
