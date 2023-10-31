@@ -25,7 +25,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/images/6.824/lab2_2A.jpg">
 <meta property="article:published_time" content="2023-10-07T03:20:18.000Z">
-<meta property="article:modified_time" content="2023-10-11T08:24:13.898Z">
+<meta property="article:modified_time" content="2023-10-31T07:33:46.040Z">
 <meta property="article:author" content="Melrose Wei">
 <meta property="article:tag" content="MIT6.824">
 <meta property="article:tag" content="go">
@@ -225,7 +225,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          2.8k 字
+          4.4k 字
         
       </span>
     
@@ -236,7 +236,7 @@
         
         
         
-          24 分钟
+          37 分钟
         
       </span>
     
@@ -293,6 +293,8 @@ leader
 AppendEntries RPC）。 2A
 的目标是选出单个leader，如果没有故障，leader将继续担任；如果 老leader
 发生故障 或 发往/来自 老leader的数据包丢失，则新的leader将接管。</p>
+<p>具体过程可以参见 <a
+target="_blank" rel="noopener" href="https://thesecretlivesofdata.com/raft/#election">领导者选举</a></p>
 <h2 id="选举发起逻辑">选举发起逻辑</h2>
 <p>在 <code>Make()</code>中创建后台 goroutine，
 当有一段时间没有收到其他节点的消息时，它将通过发送<code>RequestVote</code>
@@ -338,7 +340,7 @@ Livestock）</strong>，即避免节点反复进入选举状态但又无法选�
 <li>如果<code>args.Term == rf.term</code>：
 <ol type="1">
 <li>如果投票节点已经是<code>leader</code>就直接返回；</li>
-<li>如果投票节点的<code>votedFor</code>不为-1并且不等于<code>candidateId</code>则立刻返回拒；</li>
+<li>如果投票节点的<code>votedFor</code>不为-1并且不等于<code>candidateId</code>则立刻返回；</li>
 <li>如果<code>voteFor</code>等于<code>candidateId</code>则同意投票，置<code>reply.VoteGranted</code>为<code>true</code></li>
 </ol></li>
 <li>如果<code>args.Term &gt; rf.term</code>：首先置投票节点<code>rf.term = args.Term</code>
@@ -352,11 +354,12 @@ term 是更新后的<code>args.Term</code>）。</li>
 置为 true，将状态切换为<code>Follower</code> 就返回。</li>
 </ol></li>
 </ol>
-<h2 id="append-entries的简单实现">Append Entries的简单实现</h2>
+<h2 id="append-entries-rpc的简单实现">Append Entries RPC的简单实现</h2>
 <p>AppendEntries
 RPC是Raft算法中用于复制日志条目的RPC请求，其作用是将领导者的日志条目复制到其他服务器上。</p>
-<p>leader 定期发送AppendEntries消息(心跳包)给每个节点,
+<p>leader 定期发送 AppendEntries 消息(心跳包)给每个节点,
 以此来维持自己的leader地位。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">for</span> i, _ := <span class="hljs-keyword">range</span> peers &#123;<br>	<span class="hljs-keyword">if</span> i == rf.me &#123;<br>		<span class="hljs-keyword">continue</span><br>	&#125;<br>	<span class="hljs-keyword">go</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">(index <span class="hljs-type">int</span>)</span></span> &#123;<br>		<span class="hljs-keyword">for</span> &#123;<br>			<span class="hljs-keyword">select</span> &#123;<br>			<span class="hljs-keyword">case</span> &lt;-rf.stopCh:<br>				<span class="hljs-keyword">return</span><br>			<span class="hljs-keyword">case</span> &lt;-rf.appendEntriesTimers[index].C:<br>				rf.appendEntriesToPeer(index)<br>			&#125;<br>		&#125;<br>	&#125;(i)<br>&#125;<br></code></pre></td></tr></table></figure>
 <p><code>Make()</code>中服务器需要为每个raft节点创建一个<code>appendEntriesTimer</code>，使用长度为<code>len(peers)</code>的切片实现，定时时长为<code>HeartBeatTimeout</code>
 。并且为除了自身外的所有节点创建goroutine，定期向节点发送<code>Append Entries RPC</code>。</p>
 <p><strong>Append Entries
@@ -367,11 +370,55 @@ RPC</strong>：在2A中主要实现resetElectionTimer功能，确定leader的权
 <figure class="highlight subunit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs subunit"><span class="hljs-keyword">Test </span>(2A): initial election ...<br>warning: term changed even though there were no failures  ... Passed --   3.0  3   96   22176    0<br></code></pre></td></tr></table></figure>
 <p>所以在具体实现中我在 <code>rf.term &gt; args.Term</code>
 的情况下也进行了<code>resetElectionTimer()</code>。重置选举计时器可能是为了保持系统的稳定，直到新的领导者被选举出来。在这段时间里，避免不必要的选举可能是有益的，尤其是在网络条件不稳定或者有多个领导者竞争的情况下。</p>
+<h2 id="一些小技巧-tricks">一些小技巧 Tricks</h2>
+<h3 id="log-for-debugging">Log For Debugging</h3>
+<p>在raft中加入DebugLog布尔变量，表示是否打印log。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(rf *Raft)</span></span> log(format <span class="hljs-type">string</span>, a ...<span class="hljs-keyword">interface</span>&#123;&#125;) &#123;<br>	<span class="hljs-keyword">if</span> rf.DebugLog == <span class="hljs-literal">false</span> &#123;<br>		<span class="hljs-keyword">return</span><br>	&#125;<br>	term, index := rf.lastLogTermIndex()<br>	r := fmt.Sprintf(format, a...)<br>	s := fmt.Sprintf(<span class="hljs-string">&quot;me: %d, role: %d, term: %d, commitIndex: %d, lastlogterm: %d, index: %d&quot;</span>, rf.me, rf.role, rf.term, rf.commitIndex, term, index)<br>	log.Printf(<span class="hljs-string">&quot;%s, log: %s&quot;</span>, s, r)<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>在打印日志的时候，就可以调用 <code>rf.log()</code>
+自由地填写一些备注信息，方便定位问题。</p>
 <figure>
 <img src="/images/6.824/lab2_2A.jpg" srcset="/img/loading.gif" lazyload alt="2A passed" />
 <figcaption aria-hidden="true">2A passed</figcaption>
 </figure>
 <h1 id="part-2b---append-entries">Part 2B - Append Entries</h1>
+<p>在Raft协议中，<code>AppendEntries</code>是一种核心的RPC，需要实现一下几个功能：</p>
+<ol type="1">
+<li><strong>日志复制</strong> <code>AppendEntries</code>
+RPC用于将领导者的日志条目复制到跟随者。领导者将新的<code>logEntry</code>
+添加到其自身的日志中，然后通过<code>AppendEntries</code>
+RPC将这些<code>LogEntries</code>发送给所有跟随者。当跟随者接收到<code>AppendEntries</code>
+RPC时，它们将领导者的日志条目添加到自己的日志中。</li>
+<li><strong>领导者维持</strong>
+即使没有新的日志条目，领导者也会定期发送<code>AppendEntries</code>
+RPC作为心跳信号，以维持其领导者地位。这在上一个part中已经实现。</li>
+<li><strong>提交日志条目</strong>
+当领导者的日志条目被复制到集群中的大多数节点（<code>if count &gt; len(rf.peers)/2</code>）时，领导者可以将这些条目标记为<code>commited</code>。<code>AppendEntries</code>
+RPC包含一个<code>LeaderCommit</code>字段，该字段告诉跟随者领导者已经提交了哪些日志条目。</li>
+<li><strong>日志一致性检查</strong> <code>AppendEntries</code>
+RPC包含<code>prevLogIndex</code>和<code>prevLogTerm</code>字段，用于帮助检查领导者和跟随者的日志是否一致。如果跟随者的日志在<code>prevLogIndex</code>处的条目的<code>term</code>与<code>prevLogTerm</code>不匹配，跟随者将拒绝<code>AppendEntries</code>
+RPC。</li>
+</ol>
+<p>具体过程可以参见 <a
+target="_blank" rel="noopener" href="https://thesecretlivesofdata.com/raft/#replication">日志复制</a></p>
+<h2 id="append-entries-rpc的完整实现">Append Entries RPC的完整实现</h2>
+<p>请求参数<code>AppendEntriesArgs</code>：</p>
+<ol type="1">
+<li><code>Term</code> leader当前任期</li>
+<li><code>LeaderId</code> leader的id，使得跟随者可以重定向客户端</li>
+<li><code>PrevLogIndex</code> 新日志之前的日志条目索引</li>
+<li><code>PrevLogTerm</code> 索引为PrevLogIndex日志条目的任期</li>
+<li><code>Entries</code>
+需要同步的日志条目（如果只是发送心跳就置为空，可以一次性发送多个条目）</li>
+<li><code>LeaderCommit</code> 领导者的<code>commitIndex</code></li>
+</ol>
+<p>返回值 <code>AppendEntriesReply</code> :</p>
+<ol type="1">
+<li><code>Term</code> 服务器的任期</li>
+<li><code>Success</code>
+如果<code>follower</code>包含与<code>prevLogIndex</code>
+匹配的条目，并且这个条目的<code>term</code>与<code>prevLogTerm</code>
+相同，则结果为true。</li>
+</ol>
 
                 
               </div>
@@ -465,6 +512,12 @@ RPC</strong>：在2A中主要实现resetElectionTimer功能，确定leader的权
                 <div class="post-prevnext my-3">
                   <article class="post-prev col-6">
                     
+                    
+                      <a href="/2023/10/31/LeetCode%E5%88%B7%E9%A2%98%E6%95%B4%E7%90%86/" title="LeetCode刷题整理">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">LeetCode刷题整理</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
                     
                   </article>
                   <article class="post-next col-6">
