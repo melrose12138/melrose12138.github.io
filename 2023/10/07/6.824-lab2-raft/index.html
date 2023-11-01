@@ -25,7 +25,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/images/6.824/lab2_2A.jpg">
 <meta property="article:published_time" content="2023-10-07T03:20:18.000Z">
-<meta property="article:modified_time" content="2023-10-31T07:33:46.040Z">
+<meta property="article:modified_time" content="2023-11-01T13:19:59.777Z">
 <meta property="article:author" content="Melrose Wei">
 <meta property="article:tag" content="MIT6.824">
 <meta property="article:tag" content="go">
@@ -225,7 +225,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          4.4k 字
+          6.9k 字
         
       </span>
     
@@ -236,7 +236,7 @@
         
         
         
-          37 分钟
+          58 分钟
         
       </span>
     
@@ -419,6 +419,71 @@ target="_blank" rel="noopener" href="https://thesecretlivesofdata.com/raft/#repl
 匹配的条目，并且这个条目的<code>term</code>与<code>prevLogTerm</code>
 相同，则结果为true。</li>
 </ol>
+<p>按照论文中的步骤来实现：</p>
+<ol type="1">
+<li>如果 args.term &lt; rf.term，就返回false；</li>
+<li>如果 日志不存在logterm == PrevLogTerm 的 PrevLogIndex
+对应的条目，就返回false；翻译成程序语言</li>
+</ol>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">if</span> argsLastIndex &lt; lastIndex &amp;&amp; lastTerm == args.Term &#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span><br>	&#125;<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span><br></code></pre></td></tr></table></figure>
+<ol start="3" type="1">
+<li><p>如果现有条目与新条目（index相同但term不同）冲突，则删除现有条目及其后面的所有条目。在这里我没有做删除操作，而是找到上个
+term 的最后一条 log 的
+index，用reply的一个返回值返回给leader。程序语言：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">for</span> idx &gt; rf.commitIndex &amp;&amp; idx &gt; rf.lastSnapshotIndex &amp;&amp; rf.logEntries[rf.getIndexByLogIndex(idx)].Term == term &#123;<br>			idx -= <span class="hljs-number">1</span><br>		&#125;<br>		reply.NextIndex = idx + <span class="hljs-number">1</span><br></code></pre></td></tr></table></figure></li>
+<li><p>如果 leaderCommit &gt; commitIndex, 设置 commitIndex
+=min(leaderCommit, index of last new entry)。</p></li>
+</ol>
+<ul>
+<li>当 follower 收到 <code>AppendEntries</code> RPC 时，如果
+<code>leaderCommit</code> 大于 follower 的
+<code>commitIndex</code>，则表明 leader
+有更多的日志条目已经被提交了。</li>
+<li>然而，follower 不应该盲目地将其 <code>commitIndex</code> 更新为
+<code>leaderCommit</code>，因为它可能还没有收到所有的日志条目。如果直接设置
+<code>commitIndex = leaderCommit</code>，而 follower 的日志中还没有
+<code>leaderCommit</code> 索引处的条目，这将导致问题。</li>
+</ul>
+<blockquote>
+<p>而我们现在考虑一个场景：假设我们有三台服务器，并且 S0
+被选为领导者。S0
+从客户端接收一些命令并将它们添加到其日志中（例如，1:100、1:101 和
+1:102，格式为 term:command）。然后，在将这些条目发送到任何客户端之前，S0
+立即与其余服务器失去联系。接下来，S1 被选举为领导者。它获取两个命令
+2:103 和 2:104，并将它们复制到 S2（因此也提交它们）。紧接着，S1
+被断开，S0 被重新连接。S2 现在将被选举为领导者，因为 S0
+上的日志不是最新的。S0 将从<code>AppendEntries</code>的RPC请求助中得知
+S2 的<code>LeaderCommit</code>为 2
+，但它不应该从其日志中提交任何命令，因为其日志与 S2
+的日志不匹配。如果没有来自客户端的新命令，我们什么时候应该删除 S0
+上所有冲突的日志条目？</p>
+</blockquote>
+<p>这种情况下，根据第三步，S0会找到“上个 term 的最后一条 log 的
+index”，因为S0记录的term是1，所以S0会找到index
+0，然后返回NextIndex为1。</p>
+<blockquote>
+<p>再记录一个自己思考了一会儿的一个问题：感觉通常情况下 nextIndex 和
+matchIndex是相差1的关系，matchIndex &lt;= nextIndex -
+1，等于的情况我能理解，什么时候会出现小于呢？</p>
+</blockquote>
+<ul>
+<li>如果出现日志不一致的情况，例如，follower 的日志落后于 leader
+的日志，那么 <code>nextIndex</code> 会被递减以尝试找到一个匹配点。</li>
+<li><strong>初始化</strong>：其实主要是初始化的问题。在刚开始或者 leader
+切换的时候，也可能出现 <code>matchIndex</code> 小于
+<code>nextIndex - 1</code> 的情况，因为 <code>nextIndex</code> 会被
+<strong>初始化 </strong>为 leader 日志的最后一个条目的索引加一，而
+<code>matchIndex</code> 会被初始化为 0 。</li>
+</ul>
+<h2 id="update-commitindex-以及-apply">Update CommitIndex 以及
+apply</h2>
+<p>在commitIndex发生改变的时候，需要进行一次apply的尝试。</p>
+<p>对leader而言，每次收到 true 的 AppendEntries RPC
+reply时，如果确定多数节点对于该index已经match的，就发送一个<code>rf.notifyApplyCh &lt;- struct&#123;&#125;&#123;&#125;</code>；</p>
+<p>对follower而言，在上述Append Entries
+RPC实现的第四步中，commitIndex可能会发生改变，此时也要发送<code>rf.notifyApplyCh &lt;- struct&#123;&#125;&#123;&#125;</code>。</p>
+<p>节点的notifyApplyCh收到信号时，则开始startApplyLogs。将需要apply的msgs逐个同步到applyCh（这个chan由客户端提供）。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(rf *Raft)</span></span> startApplyLogs() &#123;<br>	<span class="hljs-keyword">defer</span> rf.applyTimer.Reset(ApplyInterval)<br>	rf.lock(<span class="hljs-string">&quot;applyLogs1&quot;</span>)<br>	<span class="hljs-keyword">var</span> msgs []ApplyMsg<br>	<span class="hljs-keyword">if</span> rf.commitIndex &lt;= rf.lastApplied &#123;<br>		msgs = <span class="hljs-built_in">make</span>([]ApplyMsg, <span class="hljs-number">0</span>)<br>	&#125; <span class="hljs-keyword">else</span> &#123;<br>		msgs = <span class="hljs-built_in">make</span>([]ApplyMsg, rf.commitIndex-rf.lastApplied)<br>		<span class="hljs-keyword">for</span> i := rf.lastApplied; i &lt;= rf.commitIndex; i++ &#123;<br>			msgs = <span class="hljs-built_in">append</span>(msgs, ApplyMsg&#123;<br>				CommandValid: <span class="hljs-literal">true</span>,<br>				Command:      rf.logEntries[rf.getIndexByLogIndex(i)].Command,<br>				CommandIndex: i,<br>			&#125;)<br>		&#125;<br>	&#125;<br>	rf.unlock(<span class="hljs-string">&quot;applyLogs1&quot;</span>)<br>	<span class="hljs-keyword">for</span> _, msg := <span class="hljs-keyword">range</span> msgs &#123;<br>		rf.applyCh &lt;- msg<br>		rf.lock(<span class="hljs-string">&quot;applyLogs2&quot;</span>)<br>		rf.lastApplied = msg.CommandIndex<br>		rf.unlock(<span class="hljs-string">&quot;applyLogs2&quot;</span>)<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
 
                 
               </div>
