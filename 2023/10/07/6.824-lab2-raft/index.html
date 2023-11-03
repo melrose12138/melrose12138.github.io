@@ -24,8 +24,9 @@
 <meta property="og:description" content="6.824lab2要求实现raft算法，将 Raft 实现为 Go 对象类型。 Raft通过选举leader、日志复制和安全性三个子问题来解决共识问题。leader负责管理日志，接受客户端的日志条目，并将其复制到其他服务器。Raft通过随机化方法简化了leader选举算法。Raft服务器之间通过RPC进行通信，基本共识算法只需要两种类型的RPC。Raft的日志复制机制保证了线性化语义，即每个操作都">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/images/6.824/lab2_2A.jpg">
+<meta property="og:image" content="http://example.com/images/6.824/lab2_2B.jpg">
 <meta property="article:published_time" content="2023-10-07T03:20:18.000Z">
-<meta property="article:modified_time" content="2023-11-01T13:19:59.777Z">
+<meta property="article:modified_time" content="2023-11-03T08:41:10.886Z">
 <meta property="article:author" content="Melrose Wei">
 <meta property="article:tag" content="MIT6.824">
 <meta property="article:tag" content="go">
@@ -225,7 +226,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          6.9k 字
+          7.6k 字
         
       </span>
     
@@ -236,7 +237,7 @@
         
         
         
-          58 分钟
+          63 分钟
         
       </span>
     
@@ -484,6 +485,25 @@ reply时，如果确定多数节点对于该index已经match的，就发送一�
 RPC实现的第四步中，commitIndex可能会发生改变，此时也要发送<code>rf.notifyApplyCh &lt;- struct&#123;&#125;&#123;&#125;</code>。</p>
 <p>节点的notifyApplyCh收到信号时，则开始startApplyLogs。将需要apply的msgs逐个同步到applyCh（这个chan由客户端提供）。</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(rf *Raft)</span></span> startApplyLogs() &#123;<br>	<span class="hljs-keyword">defer</span> rf.applyTimer.Reset(ApplyInterval)<br>	rf.lock(<span class="hljs-string">&quot;applyLogs1&quot;</span>)<br>	<span class="hljs-keyword">var</span> msgs []ApplyMsg<br>	<span class="hljs-keyword">if</span> rf.commitIndex &lt;= rf.lastApplied &#123;<br>		msgs = <span class="hljs-built_in">make</span>([]ApplyMsg, <span class="hljs-number">0</span>)<br>	&#125; <span class="hljs-keyword">else</span> &#123;<br>		msgs = <span class="hljs-built_in">make</span>([]ApplyMsg, rf.commitIndex-rf.lastApplied)<br>		<span class="hljs-keyword">for</span> i := rf.lastApplied; i &lt;= rf.commitIndex; i++ &#123;<br>			msgs = <span class="hljs-built_in">append</span>(msgs, ApplyMsg&#123;<br>				CommandValid: <span class="hljs-literal">true</span>,<br>				Command:      rf.logEntries[rf.getIndexByLogIndex(i)].Command,<br>				CommandIndex: i,<br>			&#125;)<br>		&#125;<br>	&#125;<br>	rf.unlock(<span class="hljs-string">&quot;applyLogs1&quot;</span>)<br>	<span class="hljs-keyword">for</span> _, msg := <span class="hljs-keyword">range</span> msgs &#123;<br>		rf.applyCh &lt;- msg<br>		rf.lock(<span class="hljs-string">&quot;applyLogs2&quot;</span>)<br>		rf.lastApplied = msg.CommandIndex<br>		rf.unlock(<span class="hljs-string">&quot;applyLogs2&quot;</span>)<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="leader-append-entries-to-peer-逻辑">Leader Append Entries to
+Peer 逻辑</h2>
+<p>在2A中我们已经实现了leader向其他节点发送心跳的逻辑，对每个节点创建goroutine发送AppendEntries
+RPC。</p>
+<p>在2B中我们需要对RPC的返回值reply作处理。</p>
+<p>首先，有最基本的对于所有server都需要的，当收到的reply的Term比自身的term大时，立马乖乖的变成follower，并把自身
+term 置为该 term。</p>
+<p>然后如果AppendEntries成功了，则更新nextIndex以及matchIndex，并在此时进行论文Figure2中更新commitIndex的操作。如果leader确定该index的条目已经同步到大多数节点，就更新commitIndex为该index。</p>
+<blockquote>
+<p>If there exists an N such that N &gt; commitIndex, a majority of
+matchIndex[i] ≥ N, and log[N].term == currentTerm: set commitIndex =
+N</p>
+</blockquote>
+<p>另外，只要reply.NextIndex不为0，就要把对应的nextIndex更新。这里有个bug找了老半天，就是缺了这一步，会出现<code>config.go:475: one(106) failed to reach agreement</code>。当一个服务器断联又加回来之后，有可能出现未达成共识的问题。原因就是在这时需要更新对应的nextIndex。</p>
+<figure>
+<img src="/images/6.824/lab2_2B.jpg" srcset="/img/loading.gif" lazyload alt="2B passed" />
+<figcaption aria-hidden="true">2B passed</figcaption>
+</figure>
+<h1 id="part-2c---persistence">Part 2C - Persistence</h1>
 
                 
               </div>
