@@ -25,8 +25,9 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/images/6.824/lab2_2A.jpg">
 <meta property="og:image" content="http://example.com/images/6.824/lab2_2B.jpg">
+<meta property="og:image" content="http://example.com/images/6.824/lab2_2C.jpg">
 <meta property="article:published_time" content="2023-10-07T03:20:18.000Z">
-<meta property="article:modified_time" content="2023-11-03T08:41:10.886Z">
+<meta property="article:modified_time" content="2023-11-07T01:37:19.146Z">
 <meta property="article:author" content="Melrose Wei">
 <meta property="article:tag" content="MIT6.824">
 <meta property="article:tag" content="go">
@@ -226,7 +227,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          7.6k 字
+          8.4k 字
         
       </span>
     
@@ -237,7 +238,7 @@
         
         
         
-          63 分钟
+          70 分钟
         
       </span>
     
@@ -475,6 +476,15 @@ matchIndex是相差1的关系，matchIndex &lt;= nextIndex -
 <code>nextIndex - 1</code> 的情况，因为 <code>nextIndex</code> 会被
 <strong>初始化 </strong>为 leader 日志的最后一个条目的索引加一，而
 <code>matchIndex</code> 会被初始化为 0 。</li>
+<li><code>nextIndex</code>是对领导者与给定follower共享的前缀的
+<em><strong>猜测</strong>。</em>它通常是相当乐观的，只有在收到失败 reply
+时才会倒退。例如，当一个leader刚刚被选举出来时，
+<code>nextIndex</code>被设置为日志末尾的index索引。在某种程度上，
+<code>nextIndex</code>用于最大化性能——你只需要将这些东西发送给该server。</li>
+<li><code>matchIndex</code>用于安全。它是领导者与给定追随者共享的日志前缀的
+保守<em>度量。</em><code>matchIndex</code>永远不能设置为太高的值，因为这可能会导致<code>commitIndex</code>向前移动太远。这就是为什么
+<code>matchIndex</code>初始化为0（即我们同意没有前缀），并且仅在追随者<em>积极确认</em>RPC
+时才更新<code>AppendEntries</code>。</li>
 </ul>
 <h2 id="update-commitindex-以及-apply">Update CommitIndex 以及
 apply</h2>
@@ -504,6 +514,20 @@ N</p>
 <figcaption aria-hidden="true">2B passed</figcaption>
 </figure>
 <h1 id="part-2c---persistence">Part 2C - Persistence</h1>
+<p>这部分的代码比较简单，按照课程给的示例代码实现即可。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(rf *Raft)</span></span> persist() &#123;<br>	<span class="hljs-comment">// Your code here (2C).</span><br>	w := <span class="hljs-built_in">new</span>(bytes.Buffer)<br>	e := labgob.NewEncoder(w)<br>	e.Encode(rf.term)<br>	e.Encode(rf.voteFor)<br>	e.Encode(rf.commitIndex)<br>	e.Encode(rf.logEntries)<br>	data := w.Bytes()<br>	rf.persister.SaveRaftState(data)<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>然后在这些变量发生改变的时候<code>rf.peisist()</code>即可。</p>
+<p>在这里我是很顺利的就过了。但据说这里有个难过的点
+<code>Figure 8 (unreliable)</code>.</p>
+<p>原因是 前期因为网络被设置为 unreliable 并且经常搞点 connect
+disconnect 的小动作，导致会有一大堆 Log
+冲突（几百条），后期挨个retry找nextIndex很容易导致超时。而我在实现的过程中就已经参考论文在<code>AppendEntries</code>的第3步中实现，即找到上个
+term 的最后一条 log 的
+index，用reply的一个返回值<code>NextIndex</code>返回给leader.</p>
+<figure>
+<img src="/images/6.824/lab2_2C.jpg" srcset="/img/loading.gif" lazyload alt="2C passed" />
+<figcaption aria-hidden="true">2C passed</figcaption>
+</figure>
 
                 
               </div>

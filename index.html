@@ -74,8 +74,7 @@
 
 
   
-<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="卓先生的小站" type="application/atom+xml">
-<style>mjx-container[jax="SVG"] {
+<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
   direction: ltr;
 }
 
@@ -187,7 +186,8 @@ mjx-container[display="true"] {
 mjx-container[display="true"] + br {
   display: none;
 }
-</style></head>
+</style><link rel="alternate" href="/atom.xml" title="卓先生的小站" type="application/atom+xml">
+</head>
 
 
 <body>
@@ -333,6 +333,71 @@ mjx-container[display="true"] + br {
               <div class="col-12 col-md-10 m-auto">
                 
 
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2023/11/09/6.824-lab3-kvservice/" target="_self">
+          MIT6.824 lab3 容错kv服务 项目记录
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2023/11/09/6.824-lab3-kvservice/" target="_self">
+        <div>
+          本实验使用 lab2 中的 Raft 库构建容错kv存储服务 。kv服务将是一个复制状态机，由多个使用 Raft 进行复制的kv服务器组成。只要大多数服务器处于活动状态并且可以通信，无论存在其他故障或网络分区，该服务都应该继续处理客户端请求。 我们需要基于 Raft 实现一个容灾备份的 Key-Value 存储，并保证其强一致性。 所谓 强一致性，一般指 线性一致性（Linearizable Co
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2023-11-09 11:20" pubdate>
+              2023-11-09
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%BC%80%E5%8F%91/" class="category-chain-item">开发</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/MIT6-824/">#MIT6.824</a>
+            
+              <a href="/tags/go/">#go</a>
+            
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">#分布式系统</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
 
   <div class="row mx-auto index-card">
     
@@ -906,69 +971,6 @@ mjx-container[display="true"] + br {
               <a href="/tags/Research/">#Research</a>
             
               <a href="/tags/%E5%8C%BF%E5%90%8D%E5%8C%96/">#匿名化</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h1 class="index-header">
-        
-        <a href="/2022/12/28/%E6%8D%A2%E8%84%B8%E6%8A%80%E6%9C%AF%E8%AE%BA%E6%96%87%E5%BD%92%E7%BA%B3%EF%BC%882022.12%EF%BC%89/" target="_self">
-          换脸技术论文归纳（2022.12）
-        </a>
-      </h1>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2022/12/28/%E6%8D%A2%E8%84%B8%E6%8A%80%E6%9C%AF%E8%AE%BA%E6%96%87%E5%BD%92%E7%BA%B3%EF%BC%882022.12%EF%BC%89/" target="_self">
-        <div>
-          FaceShifter: Towards High Fidelity And Occlusion Aware Face SwappingFaseShifter：高保真、遮挡识别换脸技术 2020-09-15 Lingzhi Li等 pku&amp;microsoft 研究目的以及针对问题 高保真度以及遮挡识别的人脸换脸技术。  高保真度 合成的人脸不仅共享目标面孔的姿态和表情等 属性 （attri
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2022-12-28 15:29" pubdate>
-              2022-12-28
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/%E7%A7%91%E7%A0%94/" class="category-chain-item">科研</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Research/">#Research</a>
-            
-              <a href="/tags/%E6%8D%A2%E8%84%B8/">#换脸</a>
             
           </div>
         
