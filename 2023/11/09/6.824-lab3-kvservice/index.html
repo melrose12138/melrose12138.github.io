@@ -16,24 +16,24 @@
   <meta name="author" content="Melrose Wei">
   <meta name="keywords" content="生活，灵感，猫咪，C++开发">
   
-    <meta name="description" content="本实验使用 lab2 中的 Raft 库构建容错kv存储服务 。kv服务将是一个复制状态机，由多个使用 Raft 进行复制的kv服务器组成。只要大多数服务器处于活动状态并且可以通信，无论存在其他故障或网络分区，该服务都应该继续处理客户端请求。 我们需要基于 Raft 实现一个容灾备份的 Key-Value 存储，并保证其强一致性。 所谓 强一致性，一般指 线性一致性（Linearizable Co">
+    <meta name="description" content="本实验使用 lab2 中的 Raft 库构建容错kv存储服务 。 kv服务是一个复制状态机，由多个使用 Raft 进行复制的kv服务器组成。只要大多数服务器处于活动状态并且可以通信，无论存在其他故障或网络分区，该服务都应该继续处理客户端请求。 我们需要基于 Raft 实现一个容灾备份的 Key-Value 存储，并保证其强一致性。 所谓 强一致性，一般指 线性一致性（Linearizable Co">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MIT6.824 lab3 容错kv服务 项目记录">
 <meta property="og:url" content="http://example.com/2023/11/09/6.824-lab3-kvservice/index.html">
 <meta property="og:site_name" content="卓先生的小站">
-<meta property="og:description" content="本实验使用 lab2 中的 Raft 库构建容错kv存储服务 。kv服务将是一个复制状态机，由多个使用 Raft 进行复制的kv服务器组成。只要大多数服务器处于活动状态并且可以通信，无论存在其他故障或网络分区，该服务都应该继续处理客户端请求。 我们需要基于 Raft 实现一个容灾备份的 Key-Value 存储，并保证其强一致性。 所谓 强一致性，一般指 线性一致性（Linearizable Co">
+<meta property="og:description" content="本实验使用 lab2 中的 Raft 库构建容错kv存储服务 。 kv服务是一个复制状态机，由多个使用 Raft 进行复制的kv服务器组成。只要大多数服务器处于活动状态并且可以通信，无论存在其他故障或网络分区，该服务都应该继续处理客户端请求。 我们需要基于 Raft 实现一个容灾备份的 Key-Value 存储，并保证其强一致性。 所谓 强一致性，一般指 线性一致性（Linearizable Co">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/images/6.824/kvraft.jpg">
+<meta property="og:image" content="http://example.com/images/6.824/kvraft.jpeg">
 <meta property="og:image" content="http://example.com/images/6.824/lab3_3A.jpg">
 <meta property="og:image" content="http://example.com/images/6.824/lab3_3B.jpg">
 <meta property="article:published_time" content="2023-11-09T03:20:18.000Z">
-<meta property="article:modified_time" content="2023-12-12T10:58:42.120Z">
+<meta property="article:modified_time" content="2023-12-12T11:03:41.624Z">
 <meta property="article:author" content="Melrose Wei">
 <meta property="article:tag" content="MIT6.824">
 <meta property="article:tag" content="go">
 <meta property="article:tag" content="分布式系统">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/images/6.824/kvraft.jpg">
+<meta name="twitter:image" content="http://example.com/images/6.824/kvraft.jpeg">
   
   
   
@@ -285,8 +285,8 @@
             
               <div class="markdown-body">
                 
-                <p>本实验使用 lab2 中的 Raft 库构建容错kv存储服务
-。kv服务将是一个复制状态机，由多个使用 Raft
+                <p>本实验使用 lab2 中的 Raft 库构建容错kv存储服务 。</p>
+<p>kv服务是一个复制状态机，由多个使用 Raft
 进行复制的kv服务器组成。只要大多数服务器处于活动状态并且可以通信，无论存在其他故障或网络分区，该服务都应该继续处理客户端请求。</p>
 <p>我们需要基于 Raft 实现一个容灾备份的 Key-Value
 存储，并保证其<strong>强一致性</strong>。</p>
@@ -312,7 +312,7 @@ Consistency），其条件如下：</p>
 将这个操作真正执行到状态机中，并返回 client 发来的 RPC 的 reply。</li>
 </ol>
 <figure>
-<img src="/images/6.824/kvraft.jpg" srcset="/img/loading.gif" lazyload alt="kvraft原理架构" />
+<img src="/images/6.824/kvraft.jpeg" srcset="/img/loading.gif" lazyload alt="kvraft原理架构" />
 <figcaption aria-hidden="true">kvraft原理架构</figcaption>
 </figure>
 <h2 id="分析">分析</h2>
