@@ -19,10 +19,10 @@ http://example.com/
 http://example.com/tags/MIT6-824/
 http://example.com/tags/go/
 http://example.com/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/
-http://example.com/tags/%E5%85%B3%E9%94%AE%E5%AD%97/
-http://example.com/tags/C/
 http://example.com/tags/CMU15-445/
+http://example.com/tags/C/
 http://example.com/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/
+http://example.com/tags/%E5%85%B3%E9%94%AE%E5%AD%97/
 http://example.com/tags/%E7%AE%97%E6%B3%95/
 http://example.com/tags/leetcode/
 http://example.com/tags/Coding/
@@ -37,8 +37,8 @@ http://example.com/tags/Web/
 http://example.com/tags/SSH%E5%AF%86%E9%92%A5/
 http://example.com/tags/hexo/
 http://example.com/tags/fluid/
-http://example.com/tags/%E5%8C%BF%E5%90%8D%E5%8C%96/
 http://example.com/tags/diffusion/
+http://example.com/tags/%E5%8C%BF%E5%90%8D%E5%8C%96/
 http://example.com/tags/%E6%8D%A2%E8%84%B8/
 http://example.com/categories/%E5%BC%80%E5%8F%91/
 http://example.com/categories/%E7%A7%91%E7%A0%94/
