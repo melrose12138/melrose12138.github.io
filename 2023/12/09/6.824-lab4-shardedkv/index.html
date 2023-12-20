@@ -16,20 +16,24 @@
   <meta name="author" content="Melrose Wei">
   <meta name="keywords" content="生活，灵感，猫咪，C++开发">
   
-    <meta name="description" content="这个实验室的任务是构建一个分片的键&#x2F;值存储系统。在这个系统中，键值对被分配到一组 replaca 中的不同子集，这些子集称为“分片”。通过分片，每个副本组只处理一小部分分片的 put 和 get 操作，这样可以提高系统的整体吞吐量（单位时间内的 put 和 get 操作次数）。这个存储系统由两个主要部分组成：  副本组（replica group） ：每个副本组负责一部分分片。一个副本组包含多个服">
+    <meta name="description" content="这个实验室的任务是构建一个分片的键&#x2F;值存储系统。在这个系统中，键值对被分配到一组 replaca 中的不同子集，这些子集称为“分片”。通过分片，每个副本组只处理一小部分分片的 put 和 get 操作，这样可以提高系统的整体吞吐量（单位时间内的 put 和 get 操作次数）。这个存储系统由两个主要部分组成：  raft 副本组（replica group） ：每个 raft 副本组负责一部分分片">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MIT6.824 lab4 sharded kv服务 项目记录">
 <meta property="og:url" content="http://example.com/2023/12/09/6.824-lab4-shardedkv/index.html">
 <meta property="og:site_name" content="卓先生的小站">
-<meta property="og:description" content="这个实验室的任务是构建一个分片的键&#x2F;值存储系统。在这个系统中，键值对被分配到一组 replaca 中的不同子集，这些子集称为“分片”。通过分片，每个副本组只处理一小部分分片的 put 和 get 操作，这样可以提高系统的整体吞吐量（单位时间内的 put 和 get 操作次数）。这个存储系统由两个主要部分组成：  副本组（replica group） ：每个副本组负责一部分分片。一个副本组包含多个服">
+<meta property="og:description" content="这个实验室的任务是构建一个分片的键&#x2F;值存储系统。在这个系统中，键值对被分配到一组 replaca 中的不同子集，这些子集称为“分片”。通过分片，每个副本组只处理一小部分分片的 put 和 get 操作，这样可以提高系统的整体吞吐量（单位时间内的 put 和 get 操作次数）。这个存储系统由两个主要部分组成：  raft 副本组（replica group） ：每个 raft 副本组负责一部分分片">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/6.824/shardkv.png">
+<meta property="og:image" content="http://example.com/images/6.824/lab4A.jpg">
+<meta property="og:image" content="http://example.com/images/6.824/lab4B.jpg">
 <meta property="article:published_time" content="2023-12-09T05:20:18.000Z">
-<meta property="article:modified_time" content="2023-12-18T15:51:39.034Z">
+<meta property="article:modified_time" content="2023-12-20T15:43:51.890Z">
 <meta property="article:author" content="Melrose Wei">
 <meta property="article:tag" content="MIT6.824">
 <meta property="article:tag" content="go">
 <meta property="article:tag" content="分布式系统">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/images/6.824/shardkv.png">
   
   
   
@@ -223,7 +227,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          6.4k 字
+          8.2k 字
         
       </span>
     
@@ -234,7 +238,7 @@
         
         
         
-          54 分钟
+          69 分钟
         
       </span>
     
@@ -287,16 +291,20 @@ replaca
 put 和 get 操作，这样可以提高系统的整体吞吐量（单位时间内的 put 和 get
 操作次数）。这个存储系统由两个主要部分组成：</p>
 <ol type="1">
-<li><strong>副本组（replica group）</strong>
-：每个副本组负责一部分分片。一个副本组包含多个服务器，这些服务器使用
+<li><strong>raft 副本组（replica group）</strong> ：每个 raft
+副本组负责一部分分片。一个 raft 副本组包含多个服务器，这些服务器使用
 Raft 协议来复制该组的分片数据。</li>
 <li><strong>分片主控（Shard
-Master）</strong>：分片主控决定哪个副本组负责哪个分片，这称为配置（configs）。configs
+Master）</strong>：分片主控决定哪个副本组负责哪个分片，用配置（configs）描述。configs
 随时间变化，客户端需要咨询分片主控来找到负责特定键的副本组，副本组也要咨询分片主控以确定它们需要服务的分片。整个系统中只有一个分片主控，它作为一个容错服务，也使用
 Raft 实现。</li>
 </ol>
 <p>此外，存储系统还必须能够在副本组之间<strong>转移分片</strong>。原因是
-一些副本组可能比其他组负载更重，需要移动分片以平衡负载，以及副本组可能加入或离开系统，例如，添加新的副本组以增加容量，或者将现有副本组下线进行修理或退役。</p>
+一些副本组可能比其他组负载更重，需要移动分片以平衡负载，以及副本组可能加入或离开系统，例如，添加新的raft组以增加容量，或者将现有raft组下线进行修理或退役。</p>
+<figure>
+<img src="/images/6.824/shardkv.png" srcset="/img/loading.gif" lazyload alt="shardkv原理架构" />
+<figcaption aria-hidden="true">shardkv原理架构</figcaption>
+</figure>
 <h1 id="part-4a-the-shard-master">Part 4A: The Shard Master</h1>
 <p>Shard Master 是基于 raft 的 service，与 lab3
 的处理方式一样。由于<code>Configs</code>一般比较小，甚至都不用实现 raft
@@ -369,13 +377,23 @@ Raft 实现。</li>
 </ul></li>
 </ul>
 <blockquote>
-<p>Trick: 由于每个 shard master 的 raft 是各自进行 rebalance
-分片的，我们需要保证他们会得到一样的结果。</p>
-<p>为了实现这一点 ，我的做法是map 中所有 key
+<p>Trick: 由于每个 shard master 的 raft
+是各自进行均匀分片的，我们需要保证他们会得到一样的结果。</p>
+<p>但是如果对配置的<code>Groups</code>map进行foreach的遍历，由于1. Go
+语言底层采用的是哈希查找表，并且使用链表解决哈希冲突；2. 当我们在遍历
+map 时，并不是固定地从 0 号 bucket 开始遍历，每次都是从一个随机值序号的
+bucket 开始遍历，并且是从这个 bucket 的一个随机序号的 cell 开始遍历；3.
+map在扩容后会发生key位置的移动。所以遍历得到的顺序都是不一样的，不能在各个shardmaster
+raft中 保证一致。</p>
+<p>为了解决这一点 ，我的做法是map 中所有 key
 取出来排序，搞了个有序的数组，然后通过遍历数组中有序的 key 来遍历 map 取
 value。</p>
 </blockquote>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">var</span> keys []<span class="hljs-type">int</span><br><span class="hljs-keyword">for</span> k := <span class="hljs-keyword">range</span> config.Groups &#123;<br>	keys = <span class="hljs-built_in">append</span>(keys, k)<br>&#125;<br>sort.Ints(keys)<br></code></pre></td></tr></table></figure>
+<figure>
+<img src="/images/6.824/lab4A.jpg" srcset="/img/loading.gif" lazyload alt="lab4A pass" />
+<figcaption aria-hidden="true">lab4A pass</figcaption>
+</figure>
 <h1 id="part-4b-sharded-keyvalue-server">Part 4B: Sharded Key/Value
 Server</h1>
 <h2 id="系统概览">系统概览</h2>
@@ -412,18 +430,25 @@ group 都遍历请求过；</li>
 <h2 id="拉取配置-pullconfig">拉取配置 pullConfig</h2>
 <p>每个 raft 组的 leader 需要有一个协程去向 ShardMatser
 定时拉取最新配置，一旦拉取到就需要提交到该 raft 组中以更新配置。</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs go">kv.lock(<span class="hljs-string">&quot;pullConfig&quot;</span>)<br>lastNum := kv.config.Num<br>kv.unlock(<span class="hljs-string">&quot;pullConfig&quot;</span>)<br>config := kv.mck.Query(lastNum + <span class="hljs-number">1</span>)<br><span class="hljs-keyword">if</span> config.Num == lastNum+<span class="hljs-number">1</span> &#123;<br>	<span class="hljs-comment">// 找到新的 config</span><br>	kv.lock(<span class="hljs-string">&quot;pullConfig&quot;</span>)<br>	<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(kv.waitShardIds) == <span class="hljs-number">0</span> &amp;&amp; kv.config.Num+<span class="hljs-number">1</span> == config.Num &#123;<br>		kv.unlock(<span class="hljs-string">&quot;pullConfig&quot;</span>)<br>		kv.rf.Start(config.Copy()) <span class="hljs-comment">// 拉取到新配置就提交</span><br>	&#125; <span class="hljs-keyword">else</span> &#123;<br>		kv.unlock(<span class="hljs-string">&quot;pullConfig&quot;</span>)<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs go">kv.lock(<span class="hljs-string">&quot;pullConfig&quot;</span>)<br>lastNum := kv.config.Num<br>kv.unlock(<span class="hljs-string">&quot;pullConfig&quot;</span>)<br>config := kv.mck.Query(lastNum + <span class="hljs-number">1</span>)<br><span class="hljs-keyword">if</span> config.Num == lastNum+<span class="hljs-number">1</span> &#123;<br>	<span class="hljs-comment">// 找到新的 config</span><br>	kv.lock(<span class="hljs-string">&quot;pullConfig&quot;</span>)<br>	<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(kv.waitShards) == <span class="hljs-number">0</span> &amp;&amp; kv.config.Num+<span class="hljs-number">1</span> == config.Num &#123;<br>		kv.unlock(<span class="hljs-string">&quot;pullConfig&quot;</span>)<br>		kv.rf.Start(config.Copy()) <span class="hljs-comment">// 拉取到新配置就提交</span><br>	&#125; <span class="hljs-keyword">else</span> &#123;<br>		kv.unlock(<span class="hljs-string">&quot;pullConfig&quot;</span>)<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
 <h2 id="配置更新">配置更新</h2>
 <p>kv层我们维护两个<code>map</code>，分别是记录 KVServer 目前持有的分片
 以及 接受新配置后但是还未拉取的分片。</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs go">ownShards     <span class="hljs-keyword">map</span>[<span class="hljs-type">int</span>]<span class="hljs-type">bool</span><br>waitShardIds  <span class="hljs-keyword">map</span>[<span class="hljs-type">int</span>]<span class="hljs-type">bool</span><br></code></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs go">ownShards     <span class="hljs-keyword">map</span>[<span class="hljs-type">int</span>]<span class="hljs-type">bool</span><br>waitShards  <span class="hljs-keyword">map</span>[<span class="hljs-type">int</span>]<span class="hljs-type">bool</span><br>historyShards <span class="hljs-keyword">map</span>[<span class="hljs-type">int</span>]<span class="hljs-keyword">map</span>[<span class="hljs-type">int</span>]MergeShardData<br></code></pre></td></tr></table></figure>
 <p><code>ownShards</code>表示 当前 <code>raft</code> 组在当前
 <code>config</code>
 下负责管理此分片，则该分片可以提供读写服务，否则该分片暂不可以提供读写服务，但不会阻塞配置更新协程拉取新配置。</p>
-<p><code>waitShardIds</code>表示表示当前 <code>raft</code> 组在当前
+<p><code>waitShards</code>表示当前 <code>raft</code> 组在当前
 <code>config</code> 下负责管理此分片，暂不可以提供读写服务，需要当前
 <code>raft</code> 组从上一个配置该分片所属 <code>raft</code>
 组拉数据过来之后才可以提供读写服务。</p>
+<p><code>historyShards</code> 表示当前 <code>raft</code> 组在当前
+<code>config</code> 下不负责管理此分片，不可以提供读写服务，但当前
+<code>raft</code> 组在上一个 <code>config</code>
+时复制管理此分片，因此当前 <code>config</code> 下负责管理此分片的
+<code>raft</code> 组拉取完数据后会向本 <code>raft</code>
+组发送分片清理的 <code>rpc</code>，接着本 <code>raft</code>
+组将数据清空即可。</p>
 <p>上一节中 拉取到新配置后，<code>kv.rf.Start(config.Copy())</code>
 深拷贝一份 config 并提交到 raft 组进行 <strong>配置更新</strong>。</p>
 <p><code>go kv.waitApplyCh()</code>协程接收到新配置后，会经历以下过程：</p>
@@ -447,7 +472,7 @@ group 都遍历请求过；</li>
 <ul>
 <li><p>更新当前副本组拥有的分片集合 <code>kv.ownShards</code>。</p></li>
 <li><p>如果旧配置的序号不为零，则更新需要等待的新分片集合
-<code>kv.waitShardIds</code>。</p></li>
+<code>kv.waitShards</code>。</p></li>
 <li><p>将新配置和旧配置分别复制到 <code>kv.config</code> 和
 <code>kv.oldConfig</code>。</p></li>
 <li><p>调用 <code>kv.saveSnapshot</code>
@@ -458,18 +483,17 @@ group 都遍历请求过；</li>
 <p><code>go kv.pullShards()</code>协程用于分片迁移，我这边实现的的主动
 pull 分片，当然也可以有 push 的实现。</p>
 <blockquote>
-<p>这里为什么要单独启动一个协程来进行分片迁移呢？</p>
+<p>抛出一个问题：这里为什么要单独启动一个协程来进行分片迁移呢？</p>
 </blockquote>
 <p><code>pullShards()</code>中
-对于<code>waitShardIds</code>中的分片，分别启动 goroutine
-来拉取分片。</p>
+对于<code>waitShards</code>中的分片，分别启动 goroutine 来拉取分片。</p>
 <p>此时，同样通过<code>config.Groups[config.Shards[shardId]]</code>找到所需分片所在的
 raft 组（注意：此处的config是<code>oldConfig</code>），遍历这些 server
 发起<code>FetchShardData</code> RPC
 调用请求分片数据。<code>FetchShardData</code> RPC args 以及 reply
 结构如下：</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> FetchShardDataArgs <span class="hljs-keyword">struct</span> &#123;<br>	ConfigNum <span class="hljs-type">int</span><br>	ShardNum  <span class="hljs-type">int</span><br>&#125;<br><br><span class="hljs-keyword">type</span> FetchShardDataReply <span class="hljs-keyword">struct</span> &#123;<br>	Success    <span class="hljs-type">bool</span><br>	MsgIndexes <span class="hljs-keyword">map</span>[<span class="hljs-type">int64</span>]<span class="hljs-type">int64</span><br>	Data       <span class="hljs-keyword">map</span>[<span class="hljs-type">string</span>]<span class="hljs-type">string</span><br>&#125;<br></code></pre></td></tr></table></figure>
-<p>收到成功 reply 之后，检查 <code>waitShardIds</code> 中是否还需要这个
+<p>收到成功 reply 之后，检查 <code>waitShards</code> 中是否还需要这个
 <code>shardId</code>，且当前配置 (<code>kv.config.Num</code>)
 是所请求配置的下一个版本（<code>config.Num+1</code>）。</p>
 <blockquote>
@@ -479,14 +503,64 @@ raft 组（注意：此处的config是<code>oldConfig</code>），遍历这些 s
 并记录日志。调用 Raft 的 <code>Start</code> 方法将合并的分片数据
 (<code>mergeArgs</code>) 提交给 Raft 日志共识。如果当前节点不是领导者
 (<code>!isLeader</code>)，则终止处理。</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs go">kv.lock(<span class="hljs-string">&quot;pullShard&quot;</span>)<br><span class="hljs-keyword">if</span> _, ok = kv.waitShardIds[shardId]; ok &amp;&amp; kv.config.Num == config.Num+<span class="hljs-number">1</span> &#123;<br>	replyCopy := reply.Copy()<br>	mergeArgs := MergeShardData&#123;<br>		ConfigNum:  args.ConfigNum,<br>		ShardNum:   args.ShardNum,<br>		Data:       replyCopy.Data,<br>		MsgIndexes: replyCopy.MsgIndexes,<br>	&#125;<br>	kv.unlock(<span class="hljs-string">&quot;pullShard&quot;</span>)<br>	_, _, isLeader := kv.rf.Start(mergeArgs) <span class="hljs-comment">// raft 共识</span><br>	<span class="hljs-keyword">if</span> !isLeader &#123;<br>		<span class="hljs-keyword">break</span><br>	&#125;<br>&#125; <span class="hljs-keyword">else</span> &#123;<br>	kv.unlock(<span class="hljs-string">&quot;pullShard&quot;</span>)<br>&#125;<br></code></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs go">kv.lock(<span class="hljs-string">&quot;pullShard&quot;</span>)<br><span class="hljs-keyword">if</span> _, ok = kv.waitShards[shardId]; ok &amp;&amp; kv.config.Num == config.Num+<span class="hljs-number">1</span> &#123;<br>	replyCopy := reply.Copy()<br>	mergeArgs := MergeShardData&#123;<br>		ConfigNum:  args.ConfigNum,<br>		ShardNum:   args.ShardNum,<br>		Data:       replyCopy.Data,<br>		MsgIndexes: replyCopy.MsgIndexes,<br>	&#125;<br>	kv.unlock(<span class="hljs-string">&quot;pullShard&quot;</span>)<br>	_, _, isLeader := kv.rf.Start(mergeArgs) <span class="hljs-comment">// raft 共识</span><br>	<span class="hljs-keyword">if</span> !isLeader &#123;<br>		<span class="hljs-keyword">break</span><br>	&#125;<br>&#125; <span class="hljs-keyword">else</span> &#123;<br>	kv.unlock(<span class="hljs-string">&quot;pullShard&quot;</span>)<br>&#125;<br></code></pre></td></tr></table></figure>
 <p>本 raft 组收到<code>mergeArgs</code>后check一下
 <code>ConfigNum</code> （这也是旧的配置）以及
-分片是否在<code>waitShardIds</code>中，并且根据<code>Data</code>和<code>MsgIndexes</code>更新kv数据以及
-client对应的 <code>msgId</code>。这是出于 <strong>幂等性
-</strong>的考虑。<code>lastMsgIdx</code>需要用于<code>isRepeated</code>校验，防止重复请求。</p>
+分片是否在<code>waitShardIds</code>中，并且根据<code>Data</code>和<code>MsgIndexes</code>更新
+kv 数据以及 client对应的 <code>msgId</code>。这是出于 <strong>幂等性
+</strong>的考虑。<code>lastMsgIdx</code>
+需要用于<code>isRepeated</code>校验，防止执行重复请求。</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(kv *ShardKV)</span></span> isRepeated(shardId <span class="hljs-type">int</span>, clientId <span class="hljs-type">int64</span>, id <span class="hljs-type">int64</span>) <span class="hljs-type">bool</span> &#123;<br>	<span class="hljs-keyword">if</span> val, ok := kv.lastMsgIdx[shardId][clientId]; ok &#123;<br>		<span class="hljs-keyword">return</span> val == id<br>	&#125;<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span><br>&#125;<br></code></pre></td></tr></table></figure>
-<p>最后，本raft组向原分片所在raft组发送清除分片数据的请求。</p>
+<p>最后，本raft组向原分片所在raft组发送清理分片数据的 RPC调用。</p>
+<h2 id="分片清理">分片清理</h2>
+<p>raft 组的 leader 收到分片数据的 RPC 后，前面的
+<code>historyShards</code>就发挥完作用准备退休了。</p>
+<p>leader 调用<code>Start()</code>方法将
+<code>CleanShardDataArgs</code>结构的日志提交 raft 共识。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> CleanShardDataArgs <span class="hljs-keyword">struct</span> &#123;<br>	ConfigNum <span class="hljs-type">int</span><br>	ShardNum  <span class="hljs-type">int</span><br>&#125;<br></code></pre></td></tr></table></figure>
+<p>各个 raft 组的节点 apply data清理任务，将<code>historyShards</code>
+中 <code>ConfigNum</code>对应的分片删除，并保存快照。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(kv *ShardKV)</span></span> applyCleanUp(msg raft.ApplyMsg, data CleanShardDataArgs) &#123;<br>	kv.lock(<span class="hljs-string">&quot;ApplyCleanUp&quot;</span>)<br>	<span class="hljs-keyword">if</span> kv.historyDataExist(data.ConfigNum, data.ShardNum) &#123;<br>		<span class="hljs-built_in">delete</span>(kv.historyShards[data.ConfigNum], data.ShardNum)<br>	&#125;<br>	kv.saveSnapshot(msg.CommandIndex)<br>	kv.unlock(<span class="hljs-string">&quot;ApplyCleanUp&quot;</span>)<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="架构分析">架构分析</h2>
+<blockquote>
+<p>为什么不在收到pullShard的请求之后就删除自己的shard？</p>
+</blockquote>
+<p>我们需要考虑以下情况：假设 raft组 A 向 raft组B 发送 pullShard
+请求，raft 组 B 删除了 shard 并 return RPC
+请求，结果返回发送过程中网络断了，包含分片数据的<code>MergeShardData</code>就丢失了，这样就无法挽回了。</p>
+<p>解决方案：我们在把 shard 数据发给 组B
+后，暂时并不从自己这里删除（放入<code>historyShards</code>中），而由 组
+A 确认自己已经收到数据并保存完毕（raft 达成共识）后，再告诉 组B
+可以删除，相当于加入一个 <strong>删除确认机制</strong>。</p>
+<blockquote>
+<p>处理配置更新的最简单方法是在转换完成之前禁止所有客户端操作。虽然概念上很简单，但这种方法在生产级系统中并不可行；每当机器被带入或取出时，这都会导致所有客户端长时间停顿。也就是说不能保证系统的
+<strong>可用性</strong>。</p>
+<p>假设某个 raft组 G3 在转换到 配置 C 时需要 G1 中的分片 S1 和 G2
+中的分片 S2。如何使 G3
+在收到必要的状态后立即开始为分片提供服务，即使它仍在等待其他一些分片？</p>
+</blockquote>
+<p>有一个想法是：我们是否可以在 apply
+协程<strong><em>更新配置</em></strong>的时候由 leader
+异步启动对应的协程，让其独立的根据 raft 组为粒度拉取数据呢？</p>
+<p>答案是不行的。可以想象一个这样的场景：leader apply
+了新配置后便挂了，然后此时 follower 也 apply
+了该配置但并不会启动该任务，在该 raft 组的新 leader
+选出来后，该任务已经无法被执行了。</p>
+<p>为了保证分片粒度的<strong>可用性</strong>，我的做法如下：</p>
+<ul>
+<li><p>维护 <code>ownShards</code>, <code>waitShards</code>,
+<code>historyShards</code>三个<code>map</code>,
+分别表示当前config下自己应该持有的分片、等待迁移的分片以及曾经拥有但还不该删除的分片。</p></li>
+<li><p>为了维持其间的<strong>幂等性</strong>，维护<code>lastMsgIdx[shardId][clientId]</code>用来做重复校验。</p></li>
+<li><p>各个KVserver（除了leader）在 apply
+分片迁移日志的时候更新自己的data。</p></li>
+</ul>
+<p>另外也有许多网上的实现方法是
+维护shard的状态<code>state</code>，而我交给KVserver对象使用<code>map</code>来管理这个状态，本质上没有区别。</p>
+<figure>
+<img src="/images/6.824/lab4B.jpg" srcset="/img/loading.gif" lazyload alt="lab4B pass" />
+<figcaption aria-hidden="true">lab4B pass</figcaption>
+</figure>
 
                 
               </div>
