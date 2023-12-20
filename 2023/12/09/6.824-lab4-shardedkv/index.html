@@ -16,18 +16,18 @@
   <meta name="author" content="Melrose Wei">
   <meta name="keywords" content="生活，灵感，猫咪，C++开发">
   
-    <meta name="description" content="这个实验室的任务是构建一个分片的键&#x2F;值存储系统。在这个系统中，键值对被分配到一组 replaca 中的不同子集，这些子集称为“分片”。通过分片，每个副本组只处理一小部分分片的 put 和 get 操作，这样可以提高系统的整体吞吐量（单位时间内的 put 和 get 操作次数）。这个存储系统由两个主要部分组成：  raft 副本组（replica group） ：每个 raft 副本组负责一部分分片">
+    <meta name="description" content="这个实验的任务是构建一个分片的键&#x2F;值存储系统。在这个系统中，键值对被分配到一组 replaca 中的不同子集，这些子集称为“分片”。通过分片，每个raft组只处理一小部分分片的 put 和 get 操作，这样可以提高系统的整体吞吐量（单位时间内的 put 和 get 操作次数）。这个存储系统由两个主要部分组成：  raft 副本组（replica group） ：每个 raft 副本组负责一部分分">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MIT6.824 lab4 sharded kv服务 项目记录">
 <meta property="og:url" content="http://example.com/2023/12/09/6.824-lab4-shardedkv/index.html">
 <meta property="og:site_name" content="卓先生的小站">
-<meta property="og:description" content="这个实验室的任务是构建一个分片的键&#x2F;值存储系统。在这个系统中，键值对被分配到一组 replaca 中的不同子集，这些子集称为“分片”。通过分片，每个副本组只处理一小部分分片的 put 和 get 操作，这样可以提高系统的整体吞吐量（单位时间内的 put 和 get 操作次数）。这个存储系统由两个主要部分组成：  raft 副本组（replica group） ：每个 raft 副本组负责一部分分片">
+<meta property="og:description" content="这个实验的任务是构建一个分片的键&#x2F;值存储系统。在这个系统中，键值对被分配到一组 replaca 中的不同子集，这些子集称为“分片”。通过分片，每个raft组只处理一小部分分片的 put 和 get 操作，这样可以提高系统的整体吞吐量（单位时间内的 put 和 get 操作次数）。这个存储系统由两个主要部分组成：  raft 副本组（replica group） ：每个 raft 副本组负责一部分分">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/images/6.824/shardkv.png">
 <meta property="og:image" content="http://example.com/images/6.824/lab4A.jpg">
 <meta property="og:image" content="http://example.com/images/6.824/lab4B.jpg">
 <meta property="article:published_time" content="2023-12-09T05:20:18.000Z">
-<meta property="article:modified_time" content="2023-12-20T15:43:51.890Z">
+<meta property="article:modified_time" content="2023-12-20T15:46:30.865Z">
 <meta property="article:author" content="Melrose Wei">
 <meta property="article:tag" content="MIT6.824">
 <meta property="article:tag" content="go">
@@ -285,9 +285,9 @@
             
               <div class="markdown-body">
                 
-                <p>这个实验室的任务是构建一个分片的键/值存储系统。在这个系统中，键值对被分配到一组
+                <p>这个实验的任务是构建一个分片的键/值存储系统。在这个系统中，键值对被分配到一组
 replaca
-中的不同子集，这些子集称为“分片”。通过分片，每个副本组只处理一小部分分片的
+中的不同子集，这些子集称为“分片”。通过分片，每个raft组只处理一小部分分片的
 put 和 get 操作，这样可以提高系统的整体吞吐量（单位时间内的 put 和 get
 操作次数）。这个存储系统由两个主要部分组成：</p>
 <ol type="1">
@@ -299,7 +299,7 @@ Master）</strong>：分片主控决定哪个副本组负责哪个分片，用�
 随时间变化，客户端需要咨询分片主控来找到负责特定键的副本组，副本组也要咨询分片主控以确定它们需要服务的分片。整个系统中只有一个分片主控，它作为一个容错服务，也使用
 Raft 实现。</li>
 </ol>
-<p>此外，存储系统还必须能够在副本组之间<strong>转移分片</strong>。原因是
+<p>此外，存储系统还必须能够在raft副本组之间<strong>转移分片</strong>。原因是
 一些副本组可能比其他组负载更重，需要移动分片以平衡负载，以及副本组可能加入或离开系统，例如，添加新的raft组以增加容量，或者将现有raft组下线进行修理或退役。</p>
 <figure>
 <img src="/images/6.824/shardkv.png" srcset="/img/loading.gif" lazyload alt="shardkv原理架构" />
