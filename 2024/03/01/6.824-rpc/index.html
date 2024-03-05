@@ -1,0 +1,801 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/zju.png">
+  <link rel="icon" href="/img/zju.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Melrose Wei">
+  <meta name="keywords" content="生活，灵感，猫咪，C++开发">
+  
+    <meta name="description" content="RPC 基本概念 RPC 全称为 Remote Procedure Call，即 远程过程调用，他可以让用户在不知道底层网络协议的情况下，在本地的计算机就可以调用远端服务器的一些处理方法，然后服务器会把处理的结果返回到用户本地，就像这个方法写在用户本地空间中一样。  Client 端（由上到下）：  Application：应用层，表示和用户直接交互的部分，用户在该层确定自己想要调用的函数，并且输">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MIT6.824 rpc 相关知识整理">
+<meta property="og:url" content="http://example.com/2024/03/01/6.824-rpc/index.html">
+<meta property="og:site_name" content="卓先生的小站">
+<meta property="og:description" content="RPC 基本概念 RPC 全称为 Remote Procedure Call，即 远程过程调用，他可以让用户在不知道底层网络协议的情况下，在本地的计算机就可以调用远端服务器的一些处理方法，然后服务器会把处理的结果返回到用户本地，就像这个方法写在用户本地空间中一样。  Client 端（由上到下）：  Application：应用层，表示和用户直接交互的部分，用户在该层确定自己想要调用的函数，并且输">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/6.824/rpc%E7%A4%BA%E6%84%8F%E5%9B%BE.png">
+<meta property="article:published_time" content="2024-03-01T11:20:26.000Z">
+<meta property="article:modified_time" content="2024-03-05T14:05:46.228Z">
+<meta property="article:author" content="Melrose Wei">
+<meta property="article:tag" content="MIT6.824">
+<meta property="article:tag" content="go">
+<meta property="article:tag" content="分布式系统">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/images/6.824/rpc%E7%A4%BA%E6%84%8F%E5%9B%BE.png">
+  
+  
+  
+  <title>MIT6.824 rpc 相关知识整理 - 卓先生的小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="卓先生的小站" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 80vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>卓先生的小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/lanny.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="MIT6.824 rpc 相关知识整理"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-03-01 19:20" pubdate>
+          2024年3月1日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          36 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+        <div class="scroll-down-bar">
+          <i class="iconfont icon-arrowdown"></i>
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">MIT6.824 rpc 相关知识整理</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="rpc-基本概念">RPC 基本概念</h1>
+<p>RPC 全称为 Remote Procedure Call，即
+<strong>远程过程调用</strong>，他可以让用户在不知道底层网络协议的情况下，在本地的计算机就可以调用远端服务器的一些处理方法，然后服务器会把处理的结果返回到用户本地，就像这个方法写在用户本地空间中一样。</p>
+<p><img src="/images/6.824/rpc示意图.png" srcset="/img/loading.gif" lazyload title="RPC原理示意图" /></p>
+<p>Client 端（由上到下）：</p>
+<ul>
+<li>Application：应用层，表示和用户直接交互的部分，用户在该层确定自己想要调用的函数，并且输入参数</li>
+<li>stub：原意是烟蒂，很形象的表示这只是个函数空壳，表示用户想要调用的函数，这里可以是函数名</li>
+<li>RPC lib：RPC
+库，包括一系列的编码解码工作，对于用户端来说，是编码用户的函数调用请求进入网络层，或者是解码服务端的结果成为上层结构可以理解的语言。</li>
+<li>Network Layer：网络层传输协议，这里不再赘述，它可以是 TCP 或者
+UDP。</li>
+</ul>
+<p>Server 端（由下到上）：</p>
+<ul>
+<li>Network Layer：网络层传输协议，同上</li>
+<li>RPC lib：RPC
+库，对服务端来说，用于解码用户的调用函数请求，或者是函数结果的封装。</li>
+<li>Dispatcher：用户的请求到达该层后，服务端需要通过
+Dispatcher，根据请求的函数，找到服务器中对应的函数，并把任务交到这个函数上</li>
+<li>Handler：具体的函数逻辑</li>
+</ul>
+<p>RPC 的操作流程为：</p>
+<ul>
+<li><strong>用户端</strong>写好函数调用，向下传递到网络层并发送到服务端</li>
+<li><strong>服务端</strong>上行用户请求，通过 Dispatcher 找到具体的
+Handler，由 Handler 处理具体的逻辑</li>
+<li><strong>服务端</strong>处理完毕后，通过 RPC lib
+编码发还到客户端</li>
+<li><strong>客户端</strong>经过解码后获得结果，用户获得 Application
+层获得结果返回。</li>
+</ul>
+<h1 id="rpc-处理失败">RPC 处理失败</h1>
+<h2 id="失败原因">失败原因</h2>
+<p>可能导致请求失败的原因有：</p>
+<ul>
+<li>服务端没有收到这个请求</li>
+<li>服务端执行了请求，但响应之前宕机了</li>
+<li>服务端执行了请求并发送了响应，但在响应之前网络故障了</li>
+</ul>
+<h2 id="解决方案">解决方案</h2>
+<h3 id="方案1-at-least-once">方案1: At Least Once</h3>
+<p>客户端会不断重试请求，直到收到请求被执行的肯定确认。适用于只读和幂等操作。</p>
+<p>At least once
+会造成资源浪费，服务端出现不一致的情况，不是一个很好的方法。</p>
+<h3 id="方案2-at-most-once">方案2: At Most Once</h3>
+<p>客户端不会自动重试请求。</p>
+<p>如果没有针对失败请求的显式重试机制，请求可能会丢失并且永远不会被执行。</p>
+<p>如果重试请求，服务器负责检测重复请求并确保只有一个请求成功。</p>
+<p>Go RPC 实现了 <code>At-Most-Once</code>
+语义，如果没有得到响应，只会返回一个错误。客户端可以选择重试一个失败请求，但服务端要自己处理重复的请求。</p>
+<h1 id="labrpc-代码解析">labrpc 代码解析</h1>
+<p>labrpc模拟网络的通信，可以模仿网络的延迟、丢包等故障，方便测试lab2的稳定性。顺便学习一下大佬是如何使用golang进行编程的。这里实现的RPC框架虽然只是用于模拟，相对简单，但麻雀虽小五脏俱全。其中用到了go语言的反射机制，gRPC的go语言实现也是利用这个反射机制。</p>
+<h2 id="从end.call开始">1. 从end.Call()开始</h2>
+<p><code>end.Call("Raft.AppendEntries", &amp;args, &amp;reply)</code>表示发起一个RPC调用，其中<code>Raft</code>是服务端的结构体名称，<code>AppendEntries</code>是需要调用的方法名。<code>args</code>是调用方法时传给服务端的参数，<code>reply</code>是服务端返回的响应。这两个参数都需要以指针的形式传递。</p>
+<p><strong>并发调用</strong>的场景下：同一<code>ClientEnd</code>上可以同时进行多个<code>Call()</code>调用。并发调用<code>Call()</code>时，它们可能会被服务器以不同的顺序处理，因为网络可能会重新排序消息。</p>
+<p>使用Go的<code>channel</code>和<code>select</code>语句，方法能够优雅地处理正常情况和异常情况（如网络层销毁）。此外，它使用了<code>labgob</code>作为序列化工具，这是MIT
+6.824课程中的一个自定义序列化库，用于在RPC调用中编码和解码数据。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">select</span> &#123;<br>	<span class="hljs-keyword">case</span> e.ch &lt;- req:<br>		<span class="hljs-comment">// the request has been sent.</span><br>	<span class="hljs-keyword">case</span> &lt;-e.done:<br>		<span class="hljs-comment">// entire Network has been destroyed.</span><br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span><br>	&#125;<br></code></pre></td></tr></table></figure>
+<p>该方法下向 <code>e.ch</code> 管道发送请求。</p>
+<p>那这个管道是从哪里来的呢？</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-keyword">type</span> Network <span class="hljs-keyword">struct</span> &#123;<br>	mu             sync.Mutex<br>	ends           <span class="hljs-keyword">map</span>[<span class="hljs-keyword">interface</span>&#123;&#125;]*ClientEnd  <span class="hljs-comment">// ends, by name</span><br>	enabled        <span class="hljs-keyword">map</span>[<span class="hljs-keyword">interface</span>&#123;&#125;]<span class="hljs-type">bool</span>        <span class="hljs-comment">// by end name</span><br>	servers        <span class="hljs-keyword">map</span>[<span class="hljs-keyword">interface</span>&#123;&#125;]*Server     <span class="hljs-comment">// servers, by name</span><br>	connections    <span class="hljs-keyword">map</span>[<span class="hljs-keyword">interface</span>&#123;&#125;]<span class="hljs-keyword">interface</span>&#123;&#125; <span class="hljs-comment">// endname -&gt; servername</span><br>	endCh          <span class="hljs-keyword">chan</span> reqMsg<br>	done           <span class="hljs-keyword">chan</span> <span class="hljs-keyword">struct</span>&#123;&#125; <span class="hljs-comment">// closed when Network is cleaned up</span><br>	count          <span class="hljs-type">int32</span>         <span class="hljs-comment">// total RPC count, for statistics</span><br>	bytes          <span class="hljs-type">int64</span>         <span class="hljs-comment">// total bytes send, for statistics</span><br>&#125;<br></code></pre></td></tr></table></figure>
+<p>在项目测试代码的网络构建之初，就会构建这样一个管道，随后每个终端<code>end</code>创建之后都会共用这个管道。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs go"><span class="hljs-comment">// single goroutine to handle all ClientEnd.Call()s</span><br><span class="hljs-keyword">go</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;<br>	<span class="hljs-keyword">for</span> &#123;<br>		<span class="hljs-keyword">select</span> &#123;<br>		<span class="hljs-keyword">case</span> xreq := &lt;-rn.endCh:<br>			atomic.AddInt32(&amp;rn.count, <span class="hljs-number">1</span>)<br>			atomic.AddInt64(&amp;rn.bytes, <span class="hljs-type">int64</span>(<span class="hljs-built_in">len</span>(xreq.args)))<br>			<span class="hljs-keyword">go</span> rn.processReq(xreq)<br>		<span class="hljs-keyword">case</span> &lt;-rn.done:<br>			<span class="hljs-keyword">return</span><br>		&#125;<br>	&#125;<br>&#125;()<br></code></pre></td></tr></table></figure>
+<p>另外，当网络构建之初，开启一个<code>goroutine</code>，监听来自<code>ClientEnd</code>的消息。收到消息后，就会开启一个协程<code>go rn.processReq(xreq)</code>，对请求进行处理。</p>
+<h2 id="处理请求-processreqreq">2. 处理请求 processReq(req)</h2>
+<p>这个方法非常的冗长，因为为了模拟网络的不同的状态，进行了不同的处理。接下来我们只讨论网络正常的情况下，网络是如何处理请求的。</p>
+<p>首先通过<code>Network.servers</code>这个servername到具体server的映射，找到对应的服务器，也就是下面代码里的<code>server</code>。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs go">ech := <span class="hljs-built_in">make</span>(<span class="hljs-keyword">chan</span> replyMsg)<br><span class="hljs-keyword">go</span> <span class="hljs-function"><span class="hljs-keyword">func</span><span class="hljs-params">()</span></span> &#123;<br>	r := server.dispatch(req)<br>	ech &lt;- r<br>&#125;()<br></code></pre></td></tr></table></figure>
+<p>网络创建一个管道，然后将
+<code>server.dispatch(req)</code>的结果放入其中。在<code>server.dispatch(req)</code>这个方法里，首先解析出<strong>服务名和方法名</strong>，随后通过<code>service, ok := rs.services[serviceName]</code>找到对应的服务，再调用这个服务的<code>service.dispatch(methodName, req)</code>，即将具体的请求发送给该服务器提供服务的相应方法。</p>
+<p>发送给相应服务后，会执行以下两行代码</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs go">function := method.Func<br>function.Call([]reflect.Value&#123;svc.rcvr, args.Elem(), replyv&#125;)<br></code></pre></td></tr></table></figure>
+<p><code>method</code>是一个<code>reflect.Method</code>类型的变量，通过查找方法名称查找得到（<code>method, ok := svc.methods[methname]</code>）。</p>
+<p><code>method.Func</code>是<code>reflect.Value</code>类型，它包含了对应方法的实际函数。这里，<code>function</code>变量被赋予了这个函数的反射值。</p>
+<p><code>function.Call</code>是一个通过反射调用函数的方法。<code>[]reflect.Value&#123;svc.rcvr, args.Elem(), replyv&#125;</code>是调用函数所需参数的反射值组成的切片：</p>
+<ul>
+<li><code>svc.rcvr</code>是服务对象的接收者，即服务实例本身。这是因为在Go中，方法是绑定在接收者上的，调用一个方法实际上是在特定的接收者实例上调用该方法。</li>
+<li><code>args.Elem()</code>是请求参数的反射值。<code>args</code>是一个通过<code>reflect.New</code>创建的指针类型的反射值，指向实际的参数值。<code>Elem</code>方法返回指针指向的实际值的反射值。</li>
+<li><code>replyv</code>是用于存放方法调用结果的变量的反射值。它先通过方法签名确定返回值类型，之后allocate动态创建的，以便方法可以将返回值写入其中。</li>
+</ul>
+<p>到这RPC调用就基本完成了，将<code>reply</code>结果放入<code>req.replyCh</code>中即可。</p>
+<p>最后再到<code>end.Call()</code>
+结束：<code>rep := &lt;-req.replyCh</code>。</p>
+<h1 id="当代rpc框架-dubbo">当代RPC框架 Dubbo</h1>
+<p>Dubbo
+是一个<strong>分布式服务框架</strong>，致力于提供高性能和透明化的 RPC
+远程服务调用方案，以及 SOA 服务治理方案。简单的说，Dubbo
+就是个服务框架，说白了就是个远程服务调用的分布式框架。</p>
+<h2 id="dubbo特点">Dubbo特点</h2>
+<ul>
+<li>远程通讯: 提供对多种基于长连接的 NIO 框架抽象封装(非阻塞 I/O
+的通信方式，Mina/Netty/Grizzly)，包括多种线程模型，序列化(Hessian2/ProtoBuf)，以及“请求-响应”模式的信息交换方式。</li>
+<li>集群容错:
+提供基于接口方法的透明远程过程调用(RPC)，包括多协议支持(自定义 RPC
+协议)，以及软负载均衡(Random/RoundRobin)，失败容错(Failover/Failback)，地址路由，动态配置等集群支持。</li>
+<li>自动发现:
+基于注册中心目录服务，使服务消费方能动态的查找服务提供方，使地址透明，使服务提供方可以平滑增加或减少机器。</li>
+</ul>
+<p>微服务的分布式特性，使得应用间的依赖、网络交互、数据传输变得更频繁，因此不同的应用需要<strong>定义、暴露或调用
+RPC 服务</strong>，那么这些 RPC
+服务如何定义、如何与应用开发框架结合、服务调用行为如何控制？这就是 Dubbo
+服务开发框架的意义，Dubbo 在微服务应用开发框架之上抽象了一套 <strong>RPC
+服务定义、暴露、调用与治理的编程范式。</strong></p>
+<h2 id="dubbo-与-grpc">Dubbo 与 gRPC</h2>
+<p>Dubbo 与 gRPC 最大的差异在于两者的定位上：</p>
+<ul>
+<li><strong>gRPC 定位为一款 RPC 框架</strong>，Google
+推出它的核心目标是定义云原生时代的 rpc 通信规范与标准实现；</li>
+<li><strong>Dubbo
+定位是一款微服务开发框架</strong>，它侧重解决微服务实践从服务定义、开发、通信到治理的问题，因此
+Dubbo 同时提供了 RPC 通信、与应用开发框架的适配、服务治理等能力。</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%BC%80%E5%8F%91/" class="category-chain-item">开发</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/MIT6-824/">#MIT6.824</a>
+      
+        <a href="/tags/go/">#go</a>
+      
+        <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">#分布式系统</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>MIT6.824 rpc 相关知识整理</div>
+      <div>http://example.com/2024/03/01/6.824-rpc/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Melrose Wei</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年3月1日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/12/09/6.824-lab4-shardedkv/" title="MIT6.824 lab4 sharded kv服务 项目记录">
+                        <span class="hidden-mobile">MIT6.824 lab4 sharded kv服务 项目记录</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'melrose12138/commit-utterances');
+      s.setAttribute('issue-term', 'title');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

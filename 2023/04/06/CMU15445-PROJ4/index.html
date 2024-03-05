@@ -26,7 +26,7 @@
 <meta property="og:image" content="http://example.com/images/CMU15445-PROJ4/p4paased.png">
 <meta property="og:image" content="http://example.com/images/CMU15445-PROJ4/p4leaderboard.png">
 <meta property="article:published_time" content="2023-04-06T13:05:36.000Z">
-<meta property="article:modified_time" content="2023-04-06T13:12:32.716Z">
+<meta property="article:modified_time" content="2024-03-01T05:29:46.397Z">
 <meta property="article:author" content="Melrose Wei">
 <meta property="article:tag" content="C++">
 <meta property="article:tag" content="CMU15-445">
@@ -313,13 +313,13 @@ X 锁，则 Lock Manager
 <h3 id="一检查-txn-的状态">一：检查 txn 的状态。</h3>
 <p>若 txn 处于 Abort/Commit 状态，抛逻辑异常； 若 txn 处于 Shrinking
 状态，则需要检查 txn 的隔离级别和当前锁请求类型。三种隔离级别分别是： *
-REPEATABLE _ READ: 事务需要获取所有锁。所有锁都允许处于 GROWING
-状态。在Shrinking状态下不允许使用锁。此时造成事务终止，并抛出
+REPEATABLE _ READ: 事务可以持有获取所有类型的锁。所有锁只允许出现在
+GROWING 状态。在Shrinking状态下不允许请求锁。此时造成事务终止，并抛出
 <code>LOCK_ON_SHRINKING</code> 异常。 * READ _ COMMITTED:
-事务需要获取所有锁。所有锁都允许处于 GROWING 状态，只有 IS，S 锁允许处于
-SHRINKING 状态。此时若为 IS，S 锁，则正常通过，否则抛
+事务可以持有获取所有类型的锁。所有锁都允许处于 GROWING 状态，只有 IS，S
+锁允许处于 SHRINKING 状态。此时若为 IS，S 锁，则正常通过，否则抛
 <code>LOCK_ON_SHRINKING</code>。 * READ_UNCOMMITTED: 事务只需要使用 IX、
-X 锁。 X，IX 锁允许处于 GROWING 状态。 不允许使用S, IS, SIX锁。此时若为
+X 锁。 GROWING 状态下可以持有X，IX 锁。 不允许使用S, IS, SIX锁。此时若为
 IX，X 锁，抛 <code>LOCK_ON_SHRINKING</code>，否则抛
 <code>LOCK_SHARED_ON_READ_UNCOMMITTED</code>。</p>
 <p>若 txn 处于 Growing 状态，若隔离级别为 <code>READ_UNCOMMITTED</code>
@@ -337,7 +337,7 @@ id="三检查此锁请求是否为一次锁升级">三：检查此锁请求是�
 <p>granted 和 waiting
 的锁请求均放在同一个队列里，我们需要遍历队列查看有没有与当前事务 id
 相同的请求。</p>
-<p>首先，判断此前授予锁类型是否与当前请求锁类型相同。若相同，则代表是一次重复的请求，直接返回。否则进行下一步检查。
+<p>首先，判断此前授予锁类型是否与当前请求锁类型相同，即<strong>幂等性检查</strong>。若相同，则代表是一次重复的请求，直接返回。否则进行下一步检查。
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">if</span> (request-&gt;lock_mode_ == lock_mode) &#123;<br>        lock_request_queue-&gt;latch_.<span class="hljs-built_in">unlock</span>();<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>      &#125;<br></code></pre></td></tr></table></figure></p>
 <p>接下来，判断当前资源上是否有另一个事务正在尝试升级。若有，则终止当前事务，抛出
 <code>UPGRADE_CONFLICT</code>
