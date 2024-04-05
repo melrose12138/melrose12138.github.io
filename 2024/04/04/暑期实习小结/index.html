@@ -1,0 +1,735 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/zju.png">
+  <link rel="icon" href="/img/zju.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Melrose Wei">
+  <meta name="keywords" content="生活，灵感，猫咪，C++开发">
+  
+    <meta name="description" content="写在前面 lz是25届玉泉某非科班工科专业小硕，主语言cpp，主攻后端方向。项目经典15445+6.824。一段半年大厂实习。 由于这次暑期实习春招过程中，腾讯这边流程走的相对比较快，而且部门是真的很想去，于是就接了鹅的offer。 岗位是IEG天美工作室的后台开发，base深圳。今天鹅开了特别多的实习hc，而且我在mm上调查该部门去年由于nei dou（？）而流出了很多hc，所以私以为自己非常幸">
+<meta property="og:type" content="article">
+<meta property="og:title" content="25届暑期实习小结">
+<meta property="og:url" content="http://example.com/2024/04/04/%E6%9A%91%E6%9C%9F%E5%AE%9E%E4%B9%A0%E5%B0%8F%E7%BB%93/index.html">
+<meta property="og:site_name" content="卓先生的小站">
+<meta property="og:description" content="写在前面 lz是25届玉泉某非科班工科专业小硕，主语言cpp，主攻后端方向。项目经典15445+6.824。一段半年大厂实习。 由于这次暑期实习春招过程中，腾讯这边流程走的相对比较快，而且部门是真的很想去，于是就接了鹅的offer。 岗位是IEG天美工作室的后台开发，base深圳。今天鹅开了特别多的实习hc，而且我在mm上调查该部门去年由于nei dou（？）而流出了很多hc，所以私以为自己非常幸">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-04-04T15:05:59.000Z">
+<meta property="article:modified_time" content="2024-04-05T03:49:55.617Z">
+<meta property="article:author" content="Melrose Wei">
+<meta property="article:tag" content="C++">
+<meta property="article:tag" content="实习">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>25届暑期实习小结 - 卓先生的小站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="卓先生的小站" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 80vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>卓先生的小站</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/lanny.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="25届暑期实习小结"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-04-04 23:05" pubdate>
+          2024年4月4日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          4 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+        <div class="scroll-down-bar">
+          <i class="iconfont icon-arrowdown"></i>
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">25届暑期实习小结</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="写在前面">写在前面</h1>
+<p>lz是25届玉泉某非科班工科专业小硕，主语言cpp，主攻后端方向。项目经典15445+6.824。一段半年大厂实习。</p>
+<p>由于这次暑期实习春招过程中，腾讯这边流程走的相对比较快，而且部门是真的很想去，于是就接了鹅的offer。</p>
+<p>岗位是IEG天美工作室的后台开发，base深圳。今天鹅开了特别多的实习hc，而且我在mm上调查该部门去年由于nei
+dou（？）而流出了很多hc，所以私以为自己<strong>非常幸运</strong>，这次机会非常难得。</p>
+<p>另外由于lz是杭州人，阿里系的一众部门也都投了一遍（测评笔试都做吐了），不少都在流程中（或在泡池子），也顺便记录一下。</p>
+<p>由于是第一次写面经，而且面试过程中也没有录音，只是用纸笔记录一些问题，这篇面经的完整度应该不到60%。</p>
+<p>进入浙大以来一直很关注98上这方面的信息，所以简单总结分享一下攒攒人品，祝愿大家都能收到心仪的offer！！！另外自己也有一些职业上的问题，希望有大佬能够解答一下。感谢！！！</p>
+<h1 id="腾讯面经">腾讯面经</h1>
+<h2 id="timeline">timeline</h2>
+<p>腾讯刚开始的时候属鼠还不敢投，后来在牛客上看到有人说
+<strong>腾讯可以无限捞，且不会在意之前的面评，因为他们认为人在面试过程中也是在进步的</strong>（此处点名某节），我才勇敢投出简历。实际上投的也算早，在与之前实习单位的师兄交流的时候，他也说
+<strong>投的早好</strong>。</p>
+<p>3.5 开系统</p>
+<p>3.8 投简历+测评</p>
+<p>3.12 一面 60min</p>
+<p>3.14 二面 40min</p>
+<p>3.15 三面 30min</p>
+<p>3.25 HR面 30min</p>
+<p>4.2 offer</p>
+<h2 id="面试过程">面试过程</h2>
+<p>3.8那天我印象深刻，和npy去看沙丘2，看着看着接到阿里云的电话，约了晚上的电话面，看完电影晚饭也没吃就回去面试了。然后那个面试官问了很多我不熟悉的问题，网络上的一些小林coding上都没有解释的问题，还有虚拟机docker相关的，真的是我太菜了很多都没答上来，只能根据自己的理解瞎叭叭，面完之后很受挫也很焦虑（虽然开系统前一天打电话来说我一面通过了）。于是就刷牛客，在这样的心情下投了腾讯，做了测评，本来是想拿他攒面经的。。</p>
+<p>3.11周一晚上收到了面试邀约，3.12晚上面试，面试官是在一个专门的会议室里，拿纸笔记录面评和问问题。</p>
+<p>前两轮轮面试都比较注重cpp基础的考察，穿插场景题以及服务器排查问题。大概有以下这些：</p>
+<ol type="1">
+<li>cpp的动态多态</li>
+<li>Linux内存布局，为什么代码段和数据段要分开</li>
+<li>虚函数相关（重点，我是看阿秀的学习笔记加深理解的）</li>
+<li>static关键字</li>
+<li>malloc内存申请</li>
+<li>迭代器失效</li>
+<li>sort()比较函数需要注意什么</li>
+<li>堆和栈的区别</li>
+<li>智能指针的作用的实现</li>
+</ol>
+<p>另外计算机基础相关：</p>
+<ol type="1">
+<li>SYN_RECV状态</li>
+<li>SYN flood 防御手段</li>
+<li>ping的原理</li>
+<li>TCP拥塞控制和流量控制</li>
+<li>MTU的作用</li>
+<li>进程和线程的区别</li>
+</ol>
+<p>另外一些项目引申的常规八股：</p>
+<ol type="1">
+<li>paxos和raft的区别</li>
+<li>raft是如何保障一致性的</li>
+<li>负载均衡算法有哪些</li>
+<li>一致性哈希的实现</li>
+<li>为什么用B+树不用哈希</li>
+</ol>
+<p>总之就是比较重视基础，以及一些实操经验。（各位大佬是不是有“我上我也行”的感觉</p>
+<p>三面是GM面（总监面），除了介绍业务话家常外，也会有技术问题，比如内存对齐，虚表指针，虚拟内存等等。还问了算法题，口述二叉树的最小公共祖先。。最后问看什么书，并推荐了Unix环境高级编程和Unix网络编程两本圣经。。。</p>
+<p>HR面主要问实习期间做的不好的地方，获得认可的地方，如果再来一遍怎么改进，职业规划这些。</p>
+<p>流程到HR那边之后就特别特别慢，那段时间真的茶饭不思干啥都没兴致。。</p>
+<h1 id="阿里系面经">阿里系面经</h1>
+<p>阿里系的面了很多，和很多面试官聊的也很好，且还在流程中，不过等不住了。。</p>
+<p>蚂蚁财富保险一面挂。上来问了一些Java基础问题，答得不好。后来问一些系统设计的问题，缓存穿透和缓存雪崩，mysql挂了怎么保证系统的短时可用性，还能答得有来有回。反问就是说那边Spring，springboot用的比较多，反手第二天就给我挂了。学Java还是✌️。</p>
+<p>阿里云云网络齐天二面流程中。阿里云提前批面了不少，也有一些面完就没信了。开系统前有三家面过的部门让我投系统。结果开系统那天我发现去年投的研究型实习生的流程没有结束，导致我不能接受内推，需要联系客服HR去终止流程。很多家都问我处理进度，但有些问着问着就不管了。只有齐天这家的内推人始终跟踪我的进度，我深受感动，并且因为那边也做大数据的，就接了他们的内推。由于一面面评是基础扎实有大数据经验但缺乏Java工程经验，内推人还贴心的给我列出Java相关的知识点list，此处引用一下：</p>
+<blockquote>
+<p>然后如果还是面试JAVA的话，可以把spring框架看下。包括aop，bean，依赖注入，控制反转等等.这个八股的JAVA面试应该各家公司都会问的.然后二面
+准备一下 hash表，红黑树，avltree的原理。JAVA中对应的API，以及像JAVA
+treemap类的实现细节等.算是比较经典的难一点的八股.JAVA的基础知识
+多线程，泛型，序列化这些.然后面试的时候要自信，然后职业规划想一下..</p>
+</blockquote>
+<p>为此我对照javaguide疯狂复习，发现这个网站真的很有用，除了Java之外也可以看看其他八股能不能不看答案想出来。</p>
+<p>二面是一次代码面，经典阿里伯乐平台白班编程。一道有限状态机红绿灯系统设计，一道搜索旋转数组。前者从来没碰到过，但面试官说大致的功能都实现了，最后系统上也过了，显示面（pao）试（chi）中（zi）。</p>
+<p>钉钉一面流程中-研发工程师Java，这是套件技术部门一个师兄（还给我鹅offer
+pyq点赞，尴尬）内推的，一面是些正常八股加抢票系统设计，感觉聊的还不错，面试后面试官还加班了六七分钟，给我科普钉钉未来的发展方向，说是用AI来重构未来的软件交互模式（全都是中文组合起来我咋就听不懂嘞），最后等待面试结果后也是显示面试中。</p>
+<p>阿里控股一面流程中-研发工程师C/C++，上周面的，大安全部门，主要是做阿里内部的服务器agent的。面试都是一些常规八股和实习项目相关的。最后反馈说后端基础还可以，可以多看一些开源代码。等待面试结果后显示面试中。</p>
+<p>淘天一面流程中-研发工程师Java，上周面的，品牌优惠部门。全程问项目无八股。最后反问语言关系大嘛，他说这边最近做AI相关业务，还会用到不少python。等待面试结果后显示面试中。</p>
+<p>饿了么一面流程中-研发工程师Java，上周面的。全程问项目少量八股。八股问的就是“说一说xx？”，叫我说B+树说raft还好，叫我说一说中断的时候我懵了一下，一时不知从何说起。等待面试结果后显示面试中。</p>
+<h1 id="准备过程">准备过程</h1>
+<p>准备面试主要看几个网站，小林coding，阿秀的学习笔记，个人项目md笔记，chatgpt，javaguide。</p>
+<p>小林coding让天下没有难背的八股真的不是说说的，真的易于理解。网络相关的我结合小林coding还找了抖音（你没看错是抖音hh）上的一些动画视频加深记忆。</p>
+<p>阿秀的学习笔记主要看cpp语言相关的问题，虽然很多但现在看来还是很基本的。结合modern-cpp加深理解。</p>
+<p>chatgpt不多说了，他八股背的比谁都好。</p>
+<h1 id="个人疑惑">个人疑惑</h1>
+<p>最后，我个人有些疑虑，希望有高人指点一二：</p>
+<ol type="1">
+<li><strong>游戏后台开发</strong>与互联网后端开发之间好转吗？本人杭州土著，杭州互联网机会更多，游戏机会相对较少，这次实习的经验可能帮助我在杭州互联网相关企业的秋招吗？（接是肯定接了，因为朋友都说作为农批你不接你后悔一辈子，我个人也觉得这平台很好，后面有没有offer也不确定）</li>
+<li>接了offer之后一些上海的流程我就推掉了，但杭州（特别是阿里的）我还在继续面，对云、钉钉、大安全、淘天的印象都很不错，虽然暑期实习不可能接他们了，但是如果流程还能继续，应该怎么婉转的表达自己的兴趣，之后的秋招可以为我小小开一扇窗也好？</li>
+<li>钉钉的师兄那真的好尴尬啊，他也一直在对我的流程进度，后面应该怎么跟他说一下啊？（其实都是差不多的问题，就是怎么委婉提出暑期实习的流程可以结束，但希望后面秋招能保持联系的想法。。</li>
+</ol>
+<h1 id="结语">结语</h1>
+<p>以前一直觉得项目最重要，但这次暑期实习面试让我感觉，八股真的可能比项目还重要。我记得有谁说过，不管你做了多少项目，<strong>你和面试官的交集就是那些八股</strong>，这是你能准备好而且应该准备好的一部分。而项目既然是自己手搓出来的，一定是耐得住问的，一般没什么问题。</p>
+<p>对简历上的东西要特别特别熟悉，我有两次面试官问简历上的几个关键词我没答好，非常扣印象分。</p>
+<p>感觉自己其实也只是个菜鸡，还有很多需要学习的地方，暑期实习有着落有七分都得归功于我的运气吧。</p>
+<p>最后，希望我的分享能帮助到大家！一起进步！祝大家都能收获满意的offer！</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/C/">#C++</a>
+      
+        <a href="/tags/%E5%AE%9E%E4%B9%A0/">#实习</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>25届暑期实习小结</div>
+      <div>http://example.com/2024/04/04/暑期实习小结/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Melrose Wei</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年4月4日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'melrose12138/commit-utterances');
+      s.setAttribute('issue-term', 'title');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
